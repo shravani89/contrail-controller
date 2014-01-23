@@ -1188,6 +1188,7 @@ static const char *config_template_21 = "\
                 <family>e-vpn</family>\
                 <family>route-target</family>\
                 <family>inet-vpn</family>\
+                <family>erm-vpn</family>\
             </address-families>\
         </session>\
     </bgp-router>\
@@ -1200,6 +1201,7 @@ static const char *config_template_21 = "\
                 <family>e-vpn</family>\
                 <family>route-target</family>\
                 <family>inet-vpn</family>\
+                <family>erm-vpn</family>\
             </address-families>\
         </session>\
     </bgp-router>\
@@ -2104,6 +2106,7 @@ static const char *config_template_23 = "\
                 <family>route-target</family>\
                 <family>e-vpn</family>\
                 <family>inet-vpn</family>\
+                <family>erm-vpn</family>\
             </address-families>\
         </session>\
     </bgp-router>\
@@ -2116,6 +2119,7 @@ static const char *config_template_23 = "\
                 <family>route-target</family>\
                 <family>e-vpn</family>\
                 <family>inet-vpn</family>\
+                <family>erm-vpn</family>\
             </address-families>\
         </session>\
     </bgp-router>\
@@ -2372,6 +2376,7 @@ static const char *config_template_25 = "\
                 <family>e-vpn</family>\
                 <family>route-target</family>\
                 <family>inet-vpn</family>\
+                <family>erm-vpn</family>\
             </address-families>\
         </session>\
     </bgp-router>\
@@ -2384,6 +2389,7 @@ static const char *config_template_25 = "\
                 <family>e-vpn</family>\
                 <family>route-target</family>\
                 <family>inet-vpn</family>\
+                <family>erm-vpn</family>\
             </address-families>\
         </session>\
     </bgp-router>\

@@ -25,6 +25,7 @@
 #include "bgp/bgp_session_manager.h"
 #include "bgp/bgp_peer_types.h"
 #include "bgp/bgp_sandesh.h"
+#include "bgp/ermvpn/ermvpn_table.h"
 #include "bgp/evpn/evpn_table.h"
 #include "bgp/inet/inet_table.h"
 #include "bgp/l3vpn/inetvpn_table.h"
@@ -462,6 +463,9 @@ bool BgpPeer::IsFamilyNegotiated(Address::Family family) {
     case Address::EVPN:
         return MpNlriAllowed(BgpAf::L2Vpn, BgpAf::EVpn);
         break;
+    case Address::ERMVPN:
+        return MpNlriAllowed(BgpAf::IPv4, BgpAf::ErmVpn);
+        break;
     default:
         break;
     }
@@ -605,6 +609,7 @@ void BgpPeer::RegisterAllTables() {
     } else {
         RegisterToVpnTables(true);
     }
+
     BgpPeerInfoData peer_info;
     peer_info.set_name(ToUVEKey());
     peer_info.set_send_state("not advertising");
@@ -624,6 +629,7 @@ void BgpPeer::SendOpen(TcpSession *session) {
         { 0, BgpAf::IPv4,  0, BgpAf::Vpn },
         { 0, BgpAf::L2Vpn, 0, BgpAf::EVpn },
         { 0, BgpAf::IPv4,  0, BgpAf::RTarget },
+        { 0, BgpAf::IPv4,  0, BgpAf::ErmVpn },
     };
 
     BgpProto::OpenMessage::OptParam *opt_param =
@@ -655,6 +661,13 @@ void BgpPeer::SendOpen(TcpSession *session) {
                 new BgpProto::OpenMessage::Capability(
                         BgpProto::OpenMessage::Capability::MpExtension,
                         cap_mp[3], 4);
+        opt_param->capabilities.push_back(cap);
+    }
+    if (LookupFamily(Address::ERMVPN)) {
+        BgpProto::OpenMessage::Capability *cap =
+                new BgpProto::OpenMessage::Capability(
+                        BgpProto::OpenMessage::Capability::MpExtension,
+                        cap_mp[4], 4);
         opt_param->capabilities.push_back(cap);
     }
 
@@ -832,6 +845,15 @@ void BgpPeer::ProcessUpdate(const BgpProto::Update *msg) {
         }
     }
 
+    // Retrieve label range from multicast edge discovery attribute.
+#ifdef TODO
+    if (path_attr->multicast_edge_discovery()) {
+        LabelBlockPtr lbptr = lb_mgr_->LocateBlock(
+                path_attr->multicast_edge_discovery().getLabelLow(),
+                path_attr->multicast_edge_discovery().getLabelHigh());
+        attr = server_->attr_db()->LocateAndReplaceLabelRange(lbptr);
+    }
+#endif
 
     RoutingInstance *instance = GetRoutingInstance();
     if (msg->nlri.size() || msg->withdrawn_routes.size()) {
@@ -986,6 +1008,31 @@ void BgpPeer::ProcessUpdate(const BgpProto::Update *msg) {
             break;
         }
 
+        case Address::ERMVPN: {
+            ErmVpnTable *table;
+            table = static_cast<ErmVpnTable *>(instance->GetTable(family));
+            assert(table);
+
+            vector<BgpProtoPrefix *>::const_iterator it;
+            for (it = nlri->nlri.begin(); it < nlri->nlri.end(); it++) {
+                if (!ErmVpnPrefix::IsValidForBgp((*it)->type)) {
+                    BGP_LOG_PEER(Message, this, SandeshLevel::SYS_WARN,
+                        BGP_LOG_FLAG_ALL, BGP_PEER_DIR_IN,
+                        "ERMVPN: Unsupported route type " << (*it)->type);
+                    continue;
+                }
+                DBRequest req;
+                req.oper = oper;
+                if (oper == DBRequest::DB_ENTRY_ADD_CHANGE)
+                    req.data.reset(new ErmVpnTable::RequestData(attr, flags,
+                                                              0));
+                req.key.reset(new ErmVpnTable::RequestKey(
+                                  ErmVpnPrefix(**it), this));
+                table->Enqueue(&req);
+            }
+            break;
+        }
+
         default:
             continue;
         }
@@ -1005,6 +1052,7 @@ void BgpPeer::RegisterToVpnTables(bool established) {
 
     PeerRibMembershipManager *membership_mgr = server_->membership_mgr();
     RoutingInstance *instance = GetRoutingInstance();
+
     if (IsFamilyNegotiated(Address::INETVPN)) {
         BgpTable *table = instance->GetTable(Address::INETVPN);
         BGP_LOG_PEER_TABLE(this, SandeshLevel::SYS_DEBUG, BGP_LOG_FLAG_TRACE,
@@ -1013,6 +1061,17 @@ void BgpPeer::RegisterToVpnTables(bool established) {
             membership_mgr->Register(this, table, policy_, -1,
                 boost::bind(&BgpPeer::MembershipRequestCallback, this, _1, _2, 
                             established));
+            membership_req_pending_++;
+        }
+    }
+
+    if (IsFamilyNegotiated(Address::ERMVPN)) {
+        BgpTable *table = instance->GetTable(Address::ERMVPN);
+        BGP_LOG_PEER_TABLE(this, SandeshLevel::SYS_DEBUG, BGP_LOG_FLAG_TRACE,
+                           table, "Register peer with the table");
+        if (table) {
+            membership_mgr->Register(this, table, policy_, -1,
+                boost::bind(&BgpPeer::MembershipRequestCallback, this, _1, _2));
             membership_req_pending_++;
         }
     }

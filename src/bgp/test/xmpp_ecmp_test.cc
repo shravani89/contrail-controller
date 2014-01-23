@@ -198,6 +198,7 @@ const char *XmppEcmpTest::config_tmpl = "\
                 <family>e-vpn</family>\
                 <family>route-target</family>\
                 <family>inet-vpn</family>\
+                <family>erm-vpn</family>\
             </address-families>\
         </session>\
     </bgp-router>\
@@ -210,6 +211,7 @@ const char *XmppEcmpTest::config_tmpl = "\
                 <family>e-vpn</family>\
                 <family>route-target</family>\
                 <family>inet-vpn</family>\
+                <family>erm-vpn</family>\
             </address-families>\
         </session>\
     </bgp-router>\
