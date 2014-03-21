@@ -1650,8 +1650,8 @@ protected:
     virtual void SetUp() {
         BgpXmppMcast2ServerTestBase::SetUp();
 
-        Configure(bs_x_, config_tmpl22_x);
-        Configure(bs_y_, config_tmpl22_y);
+        BgpXmppMcastTest::Configure(bs_x_, config_tmpl22_x);
+        BgpXmppMcastTest::Configure(bs_y_, config_tmpl22_y);
         task_util::WaitForIdle();
 
         BgpXmppMcast2ServerTestBase::SessionUp();
