@@ -1664,7 +1664,7 @@ protected:
     }
 };
 
-TEST_F(BgpXmppMcast2ServerTest2, SingleAgent) {
+TEST_F(BgpXmppMcast2ServerTest2, BgpConnectLater_SingleAgent) {
     const char *mroute = "225.0.0.1,0.0.0.0";
 
     // Add mcast route for all agents.
@@ -1699,6 +1699,49 @@ TEST_F(BgpXmppMcast2ServerTest2, SingleAgent) {
     // Verify number of routes on all agents.
     TASK_UTIL_EXPECT_EQ(0, agent_xa_->McastRouteCount());
     TASK_UTIL_EXPECT_EQ(0, agent_ya_->McastRouteCount());
+};
+
+TEST_F(BgpXmppMcast2ServerTest2, BgpConnectLater_MultipleAgent) {
+    const char *mroute = "225.0.0.1,0.0.0.0";
+
+    // Add mcast route for all agents.
+    agent_xa_->AddMcastRoute("blue", mroute, "10.1.1.1", "10000-19999");
+    agent_xb_->AddMcastRoute("blue", mroute, "10.1.1.2", "20000-29999");
+    agent_ya_->AddMcastRoute("blue", mroute, "10.1.1.4", "40000-49999");
+    agent_yb_->AddMcastRoute("blue", mroute, "10.1.1.5", "50000-59999");
+    task_util::WaitForIdle();
+
+    // Verify all OList elements on all agents.
+    // There should be no connectivity between trees build by X and Y.
+    VerifyOListElem(agent_xa_, "blue", mroute, 1, "10.1.1.2", agent_xb_);
+    VerifyOListElem(agent_xb_, "blue", mroute, 1, "10.1.1.1", agent_xa_);
+    VerifyOListElem(agent_ya_, "blue", mroute, 1, "10.1.1.5", agent_yb_);
+    VerifyOListElem(agent_yb_, "blue", mroute, 1, "10.1.1.4", agent_ya_);
+
+    // Now bring up the bgp session.
+    Configure(config_tmpl22);
+
+    // Verify all OList elements on all agents.
+    // There should be connectivity between trees build by X and Y.
+    VerifyOListElem(agent_xa_, "blue", mroute, 1, "10.1.1.2", agent_xb_);
+    VerifyOListElem(agent_xb_, "blue", mroute, 2, "10.1.1.1", agent_xa_);
+    VerifyOListElem(agent_xb_, "blue", mroute, 2, "10.1.1.5", agent_yb_);
+    VerifyOListElem(agent_ya_, "blue", mroute, 1, "10.1.1.5", agent_yb_);
+    VerifyOListElem(agent_yb_, "blue", mroute, 2, "10.1.1.4", agent_ya_);
+    VerifyOListElem(agent_yb_, "blue", mroute, 2, "10.1.1.2", agent_xb_);
+
+    // Delete mcast route for all agents.
+    agent_xa_->DeleteMcastRoute("blue", mroute);
+    agent_xb_->DeleteMcastRoute("blue", mroute);
+    agent_ya_->DeleteMcastRoute("blue", mroute);
+    agent_yb_->DeleteMcastRoute("blue", mroute);
+    task_util::WaitForIdle();
+
+    // Verify number of routes on all agents.
+    TASK_UTIL_EXPECT_EQ(0, agent_xa_->McastRouteCount());
+    TASK_UTIL_EXPECT_EQ(0, agent_xb_->McastRouteCount());
+    TASK_UTIL_EXPECT_EQ(0, agent_ya_->McastRouteCount());
+    TASK_UTIL_EXPECT_EQ(0, agent_yb_->McastRouteCount());
 };
 
 static const char *config_tmpl3 = "\
