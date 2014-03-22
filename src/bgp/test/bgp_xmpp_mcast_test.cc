@@ -1798,7 +1798,7 @@ TEST_F(BgpXmppMcast2ServerTest2, BgpSessionBounce_SingleAgent) {
     agent_ya_->AddMcastRoute("blue", mroute, "10.1.1.4", "40000-49999");
     task_util::WaitForIdle();
 
-    for (int idx = 0; idx < 4; ++idx) {
+    for (int idx = 0; idx < 3; ++idx) {
 
         // Bring up the bgp session.
         Configure(config_tmpl22);
@@ -1835,7 +1835,7 @@ TEST_F(BgpXmppMcast2ServerTest2, BgpSessionBounce_MultipleAgent) {
     agent_yb_->AddMcastRoute("blue", mroute, "10.1.1.5", "50000-59999");
     task_util::WaitForIdle();
 
-    for (int idx = 0; idx < 4; ++idx) {
+    for (int idx = 0; idx < 3; ++idx) {
 
         // Bring up the bgp session.
         Configure(config_tmpl22);
