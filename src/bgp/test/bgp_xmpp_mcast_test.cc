@@ -7,6 +7,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "base/test/task_test_util.h"
+#include "bgp/bgp_factory.h"
 #include "bgp/bgp_sandesh.h"
 #include "bgp/bgp_session_manager.h"
 #include "bgp/bgp_xmpp_channel.h"
@@ -26,6 +27,36 @@ using namespace boost::asio;
 using namespace boost::assign;
 using namespace std;
 using namespace test;
+
+//
+// Fire state machine timers faster and reduce possible delay in this test.
+//
+class StateMachineTest : public StateMachine {
+public:
+    explicit StateMachineTest(BgpPeer *peer) : StateMachine(peer) { }
+    ~StateMachineTest() { }
+
+    void StartConnectTimer(int seconds) {
+        connect_timer_->Start(10,
+            boost::bind(&StateMachine::ConnectTimerExpired, this),
+            boost::bind(&StateMachine::TimerErrorHanlder, this, _1, _2));
+    }
+
+    void StartOpenTimer(int seconds) {
+        open_timer_->Start(10,
+            boost::bind(&StateMachine::OpenTimerExpired, this),
+            boost::bind(&StateMachine::TimerErrorHanlder, this, _1, _2));
+    }
+
+    void StartIdleHoldTimer() {
+        if (idle_hold_time_ <= 0)
+            return;
+
+        idle_hold_timer_->Start(10,
+            boost::bind(&StateMachine::IdleHoldTimerExpired, this),
+            boost::bind(&StateMachine::TimerErrorHanlder, this, _1, _2));
+    }
+};
 
 class BgpXmppChannelMock : public BgpXmppChannel {
 public:
@@ -3021,6 +3052,8 @@ class TestEnvironment : public ::testing::Environment {
 static void SetUp() {
     ControlNode::SetDefaultSchedulingPolicy();
     BgpServerTest::GlobalSetUp();
+    BgpObjectFactory::Register<StateMachine>(
+        boost::factory<StateMachineTest *>());
 }
 
 static void TearDown() {
