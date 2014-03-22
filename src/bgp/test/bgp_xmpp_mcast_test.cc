@@ -1636,6 +1636,31 @@ static const char *config_tmpl22 = "\
 </config>\
 ";
 
+static const char *config_tmpl22_bad = "\
+<config>\
+    <bgp-router name=\'X\'>\
+        <identifier>192.168.0.101</identifier>\
+        <address>127.0.0.101</address>\
+        <port>%d</port>\
+        <session to=\'Y\'>\
+            <address-families>\
+                <family>inet-vpn</family>\
+            </address-families>\
+        </session>\
+    </bgp-router>\
+    <bgp-router name=\'Y\'>\
+        <identifier>192.168.0.102</identifier>\
+        <address>127.0.0.102</address>\
+        <port>%d</port>\
+        <session to=\'X\'>\
+            <address-families>\
+                <family>erm-vpn</family>\
+            </address-families>\
+        </session>\
+    </bgp-router>\
+</config>\
+";
+
 //
 // Don't create the BGP sessions during SetUp.
 //
@@ -1681,10 +1706,6 @@ TEST_F(BgpXmppMcast2ServerTest2, BgpConnectLater_SingleAgent) {
     VerifyOListElem(agent_xa_, "blue", mroute, 1, "10.1.1.4", agent_ya_);
     VerifyOListElem(agent_ya_, "blue", mroute, 1, "10.1.1.1", agent_xa_);
 
-    // Verify the labels used by all agents.
-    VerifyLabel(agent_xa_, "blue", mroute, 10000, 19999);
-    VerifyLabel(agent_ya_, "blue", mroute, 40000, 49999);
-
     // Delete mcast route for all agents.
     agent_xa_->DeleteMcastRoute("blue", mroute);
     agent_ya_->DeleteMcastRoute("blue", mroute);
@@ -1717,12 +1738,96 @@ TEST_F(BgpXmppMcast2ServerTest2, BgpConnectLater_MultipleAgent) {
 
     // Verify all OList elements on all agents.
     // There should be connectivity between trees build by X and Y.
-    VerifyOListElem(agent_xa_, "blue", mroute, 1, "10.1.1.2", agent_xb_);
     VerifyOListElem(agent_xb_, "blue", mroute, 2, "10.1.1.1", agent_xa_);
     VerifyOListElem(agent_xb_, "blue", mroute, 2, "10.1.1.5", agent_yb_);
-    VerifyOListElem(agent_ya_, "blue", mroute, 1, "10.1.1.5", agent_yb_);
+    VerifyOListElem(agent_xa_, "blue", mroute, 1, "10.1.1.2", agent_xb_);
     VerifyOListElem(agent_yb_, "blue", mroute, 2, "10.1.1.4", agent_ya_);
     VerifyOListElem(agent_yb_, "blue", mroute, 2, "10.1.1.2", agent_xb_);
+    VerifyOListElem(agent_ya_, "blue", mroute, 1, "10.1.1.5", agent_yb_);
+
+    // Delete mcast route for all agents.
+    agent_xa_->DeleteMcastRoute("blue", mroute);
+    agent_xb_->DeleteMcastRoute("blue", mroute);
+    agent_ya_->DeleteMcastRoute("blue", mroute);
+    agent_yb_->DeleteMcastRoute("blue", mroute);
+    task_util::WaitForIdle();
+
+    // Verify number of routes on all agents.
+    TASK_UTIL_EXPECT_EQ(0, agent_xa_->McastRouteCount());
+    TASK_UTIL_EXPECT_EQ(0, agent_xb_->McastRouteCount());
+    TASK_UTIL_EXPECT_EQ(0, agent_ya_->McastRouteCount());
+    TASK_UTIL_EXPECT_EQ(0, agent_yb_->McastRouteCount());
+};
+
+TEST_F(BgpXmppMcast2ServerTest2, BgpSessionBounce_SingleAgent) {
+    const char *mroute = "225.0.0.1,0.0.0.0";
+
+    // Add mcast route for all agents.
+    agent_xa_->AddMcastRoute("blue", mroute, "10.1.1.1", "10000-19999");
+    agent_ya_->AddMcastRoute("blue", mroute, "10.1.1.4", "40000-49999");
+    task_util::WaitForIdle();
+
+    for (int idx = 0; idx < 4; ++idx) {
+
+        // Bring up the bgp session.
+        Configure(config_tmpl22);
+
+        // Verify all OList elements on all agents.
+        VerifyOListElem(agent_xa_, "blue", mroute, 1, "10.1.1.4", agent_ya_);
+        VerifyOListElem(agent_ya_, "blue", mroute, 1, "10.1.1.1", agent_xa_);
+
+        // Now bring down the session by having mismatched families.
+        Configure(config_tmpl22_bad);
+
+        // Verify number of routes on all agents.
+        TASK_UTIL_EXPECT_EQ(0, agent_xa_->McastRouteCount());
+        TASK_UTIL_EXPECT_EQ(0, agent_ya_->McastRouteCount());
+    }
+
+    // Delete mcast route for all agents.
+    agent_xa_->DeleteMcastRoute("blue", mroute);
+    agent_ya_->DeleteMcastRoute("blue", mroute);
+    task_util::WaitForIdle();
+
+    // Verify number of routes on all agents.
+    TASK_UTIL_EXPECT_EQ(0, agent_xa_->McastRouteCount());
+    TASK_UTIL_EXPECT_EQ(0, agent_ya_->McastRouteCount());
+};
+
+TEST_F(BgpXmppMcast2ServerTest2, BgpSessionBounce_MultipleAgent) {
+    const char *mroute = "225.0.0.1,0.0.0.0";
+
+    // Add mcast route for all agents.
+    agent_xa_->AddMcastRoute("blue", mroute, "10.1.1.1", "10000-19999");
+    agent_xb_->AddMcastRoute("blue", mroute, "10.1.1.2", "20000-29999");
+    agent_ya_->AddMcastRoute("blue", mroute, "10.1.1.4", "40000-49999");
+    agent_yb_->AddMcastRoute("blue", mroute, "10.1.1.5", "50000-59999");
+    task_util::WaitForIdle();
+
+    for (int idx = 0; idx < 4; ++idx) {
+
+        // Bring up the bgp session.
+        Configure(config_tmpl22);
+
+        // Verify all OList elements on all agents.
+        // There should be connectivity between trees build by X and Y.
+        VerifyOListElem(agent_xb_, "blue", mroute, 2, "10.1.1.1", agent_xa_);
+        VerifyOListElem(agent_xb_, "blue", mroute, 2, "10.1.1.5", agent_yb_);
+        VerifyOListElem(agent_xa_, "blue", mroute, 1, "10.1.1.2", agent_xb_);
+        VerifyOListElem(agent_yb_, "blue", mroute, 2, "10.1.1.4", agent_ya_);
+        VerifyOListElem(agent_yb_, "blue", mroute, 2, "10.1.1.2", agent_xb_);
+        VerifyOListElem(agent_ya_, "blue", mroute, 1, "10.1.1.5", agent_yb_);
+
+        // Now bring down the session by having mismatched families.
+        Configure(config_tmpl22_bad);
+
+        // Verify all OList elements on all agents.
+        // There should be no connectivity between trees build by X and Y.
+        VerifyOListElem(agent_xa_, "blue", mroute, 1, "10.1.1.2", agent_xb_);
+        VerifyOListElem(agent_xb_, "blue", mroute, 1, "10.1.1.1", agent_xa_);
+        VerifyOListElem(agent_ya_, "blue", mroute, 1, "10.1.1.5", agent_yb_);
+        VerifyOListElem(agent_yb_, "blue", mroute, 1, "10.1.1.4", agent_ya_);
+    }
 
     // Delete mcast route for all agents.
     agent_xa_->DeleteMcastRoute("blue", mroute);
