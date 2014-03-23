@@ -1293,7 +1293,9 @@ TEST_F(BgpXmppMcast2ServerTest, SingleAgentXmppSessionBounce) {
 
         // Bring up session to agent xa, subscribe to blue network, add route.
         agent_xa_->SessionUp();
+        task_util::WaitForIdle();
         agent_xa_->McastSubscribe("blue", 1);
+        task_util::WaitForIdle();
         agent_xa_->AddMcastRoute("blue", mroute, "10.1.1.1", "10000-19999");
     }
 
