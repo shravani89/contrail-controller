@@ -1297,6 +1297,10 @@ TEST_F(BgpXmppMcast2ServerTest, SingleAgentXmppSessionBounce) {
         agent_xa_->AddMcastRoute("blue", mroute, "10.1.1.1", "10000-19999");
     }
 
+    // Verify all OList elements on all agents.
+    VerifyOListElem(agent_xa_, "blue", mroute, 1, "10.1.1.4", agent_ya_);
+    VerifyOListElem(agent_ya_, "blue", mroute, 1, "10.1.1.1", agent_xa_);
+
     // Delete mcast route for all agents.
     agent_xa_->DeleteMcastRoute("blue", mroute);
     agent_ya_->DeleteMcastRoute("blue", mroute);
