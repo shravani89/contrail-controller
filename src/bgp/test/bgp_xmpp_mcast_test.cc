@@ -1266,7 +1266,7 @@ TEST_F(BgpXmppMcast2ServerTest, SingleAgent) {
     TASK_UTIL_EXPECT_EQ(0, agent_ya_->McastRouteCount());
 };
 
-TEST_F(BgpXmppMcast2ServerTest, SingleAgentXmppSessionBounce) {
+TEST_F(BgpXmppMcast2ServerTest, SingleAgentXmppSessionDown) {
     const char *mroute = "225.0.0.1,0.0.0.0";
 
     // Add mcast route for all agents.
@@ -1274,37 +1274,22 @@ TEST_F(BgpXmppMcast2ServerTest, SingleAgentXmppSessionBounce) {
     agent_ya_->AddMcastRoute("blue", mroute, "10.1.1.4", "40000-49999");
     task_util::WaitForIdle();
 
-    for (int idx = 0; idx < 3; ++idx) {
-
-        // Verify all OList elements on all agents.
-        VerifyOListElem(agent_xa_, "blue", mroute, 1, "10.1.1.4", agent_ya_);
-        VerifyOListElem(agent_ya_, "blue", mroute, 1, "10.1.1.1", agent_xa_);
-
-        // Verify the labels used by all agents.
-        VerifyLabel(agent_xa_, "blue", mroute, 10000, 19999);
-        VerifyLabel(agent_ya_, "blue", mroute, 40000, 49999);
-
-        // Bring down the session to agent xa.
-        agent_xa_->SessionDown();
-
-        // Verify number of routes on all agents.
-        TASK_UTIL_EXPECT_EQ(0, agent_xa_->McastRouteCount());
-        TASK_UTIL_EXPECT_EQ(0, agent_ya_->McastRouteCount());
-
-        // Bring up session to agent xa, subscribe to blue network, add route.
-        agent_xa_->SessionUp();
-        task_util::WaitForIdle();
-        agent_xa_->McastSubscribe("blue", 1);
-        task_util::WaitForIdle();
-        agent_xa_->AddMcastRoute("blue", mroute, "10.1.1.1", "10000-19999");
-    }
-
     // Verify all OList elements on all agents.
     VerifyOListElem(agent_xa_, "blue", mroute, 1, "10.1.1.4", agent_ya_);
     VerifyOListElem(agent_ya_, "blue", mroute, 1, "10.1.1.1", agent_xa_);
 
-    // Delete mcast route for all agents.
-    agent_xa_->DeleteMcastRoute("blue", mroute);
+    // Verify the labels used by all agents.
+    VerifyLabel(agent_xa_, "blue", mroute, 10000, 19999);
+    VerifyLabel(agent_ya_, "blue", mroute, 40000, 49999);
+
+    // Bring down the session to agent xa.
+    agent_xa_->SessionDown();
+
+    // Verify number of routes on all agents.
+    TASK_UTIL_EXPECT_EQ(0, agent_xa_->McastRouteCount());
+    TASK_UTIL_EXPECT_EQ(0, agent_ya_->McastRouteCount());
+
+    // Delete mcast route for agent ya.
     agent_ya_->DeleteMcastRoute("blue", mroute);
     task_util::WaitForIdle();
 
