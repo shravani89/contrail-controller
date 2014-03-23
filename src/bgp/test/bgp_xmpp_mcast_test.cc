@@ -1667,7 +1667,7 @@ TEST_P(BgpXmppMcast2ServerParamTest, SingleAgent) {
     TASK_UTIL_EXPECT_EQ(0, agent_ya_->McastRouteCount());
 };
 
-TEST_F(BgpXmppMcast2ServerParamTest, MultipleAgent) {
+TEST_P(BgpXmppMcast2ServerParamTest, MultipleAgent) {
     const char *mroute = "225.0.0.1,0.0.0.0";
 
     // Add mcast route for all agents.
