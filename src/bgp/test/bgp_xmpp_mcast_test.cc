@@ -1633,29 +1633,24 @@ TEST_P(BgpXmppMcast2ServerParamTest, SingleAgent) {
     agent_ya_->AddMcastRoute("blue", mroute, "10.1.1.4", "40000-49999");
     task_util::WaitForIdle();
 
-    // Verify number of routes on all agents.
-    TASK_UTIL_EXPECT_EQ(1, agent_xa_->McastRouteCount());
-    TASK_UTIL_EXPECT_EQ(1, agent_ya_->McastRouteCount());
+    for (int idx = 0; idx < 3; ++idx) {
 
-    // Verify all OList elements on all agents.
-    VerifyOListElem(agent_xa_, "blue", mroute, 1, "10.1.1.4", agent_ya_);
-    VerifyOListElem(agent_ya_, "blue", mroute, 1, "10.1.1.1", agent_xa_);
+        // Verify number of routes on all agents.
+        TASK_UTIL_EXPECT_EQ(1, agent_xa_->McastRouteCount());
+        TASK_UTIL_EXPECT_EQ(1, agent_ya_->McastRouteCount());
 
-    // Verify the labels used by all agents.
-    VerifyLabel(agent_xa_, "blue", mroute, 10000, 19999);
-    VerifyLabel(agent_ya_, "blue", mroute, 40000, 49999);
+        // Verify all OList elements on all agents.
+        VerifyOListElem(agent_xa_, "blue", mroute, 1, "10.1.1.4", agent_ya_);
+        VerifyOListElem(agent_ya_, "blue", mroute, 1, "10.1.1.1", agent_xa_);
 
-    // Update the RouterIDs of X and Y as appropriate.
-    Reconfigure(config_tmpl2_new);
-    task_util::WaitForIdle();
+        // Verify the labels used by all agents.
+        VerifyLabel(agent_xa_, "blue", mroute, 10000, 19999);
+        VerifyLabel(agent_ya_, "blue", mroute, 40000, 49999);
 
-    // Verify all OList elements on all agents.
-    VerifyOListElem(agent_xa_, "blue", mroute, 1, "10.1.1.4", agent_ya_);
-    VerifyOListElem(agent_ya_, "blue", mroute, 1, "10.1.1.1", agent_xa_);
-
-    // Verify the labels used by all agents.
-    VerifyLabel(agent_xa_, "blue", mroute, 10000, 19999);
-    VerifyLabel(agent_ya_, "blue", mroute, 40000, 49999);
+        // Update the RouterIDs of X and Y as appropriate.
+        Reconfigure(config_tmpl2_new);
+        task_util::WaitForIdle();
+    }
 
     // Delete mcast route for all agents.
     agent_ya_->DeleteMcastRoute("blue", mroute);
@@ -1680,35 +1675,41 @@ TEST_P(BgpXmppMcast2ServerParamTest, MultipleAgent) {
     agent_yc_->AddMcastRoute("blue", mroute, "10.1.1.6", "60000-69999");
     task_util::WaitForIdle();
 
-    // Verify all OList elements on all agents.
-    VerifyOListElem(agent_xa_, "blue", mroute, 2, "10.1.1.2", agent_xb_);
-    VerifyOListElem(agent_xa_, "blue", mroute, 2, "10.1.1.3", agent_xc_);
-    VerifyOListElem(agent_xb_, "blue", mroute, 1, "10.1.1.1", agent_xa_);
-    VerifyOListElem(agent_xc_, "blue", mroute, 2, "10.1.1.1", agent_xa_);
-    VerifyOListElem(agent_xc_, "blue", mroute, 2, "10.1.1.6", agent_yc_);
+    for (int idx = 0; idx < 3; ++idx) {
 
-    VerifyOListElem(agent_ya_, "blue", mroute, 2, "10.1.1.5", agent_yb_);
-    VerifyOListElem(agent_ya_, "blue", mroute, 2, "10.1.1.6", agent_yc_);
-    VerifyOListElem(agent_yb_, "blue", mroute, 1, "10.1.1.4", agent_ya_);
-    VerifyOListElem(agent_yc_, "blue", mroute, 2, "10.1.1.4", agent_ya_);
-    VerifyOListElem(agent_yc_, "blue", mroute, 2, "10.1.1.3", agent_xc_);
+        // Verify number of routes on all agents.
+        TASK_UTIL_EXPECT_EQ(1, agent_xa_->McastRouteCount());
+        TASK_UTIL_EXPECT_EQ(1, agent_xb_->McastRouteCount());
+        TASK_UTIL_EXPECT_EQ(1, agent_xc_->McastRouteCount());
+        TASK_UTIL_EXPECT_EQ(1, agent_ya_->McastRouteCount());
+        TASK_UTIL_EXPECT_EQ(1, agent_yb_->McastRouteCount());
+        TASK_UTIL_EXPECT_EQ(1, agent_yc_->McastRouteCount());
 
-    // Update the RouterIDs of X and Y as appropriate.
-    Reconfigure(config_tmpl2_new);
-    task_util::WaitForIdle();
+        // Verify all OList elements on all agents.
+        VerifyOListElem(agent_xa_, "blue", mroute, 2, "10.1.1.2", agent_xb_);
+        VerifyOListElem(agent_xa_, "blue", mroute, 2, "10.1.1.3", agent_xc_);
+        VerifyOListElem(agent_xb_, "blue", mroute, 1, "10.1.1.1", agent_xa_);
+        VerifyOListElem(agent_xc_, "blue", mroute, 2, "10.1.1.1", agent_xa_);
+        VerifyOListElem(agent_xc_, "blue", mroute, 2, "10.1.1.6", agent_yc_);
 
-    // Verify all OList elements on all agents.
-    VerifyOListElem(agent_xa_, "blue", mroute, 2, "10.1.1.2", agent_xb_);
-    VerifyOListElem(agent_xa_, "blue", mroute, 2, "10.1.1.3", agent_xc_);
-    VerifyOListElem(agent_xb_, "blue", mroute, 1, "10.1.1.1", agent_xa_);
-    VerifyOListElem(agent_xc_, "blue", mroute, 2, "10.1.1.1", agent_xa_);
-    VerifyOListElem(agent_xc_, "blue", mroute, 2, "10.1.1.6", agent_yc_);
+        VerifyOListElem(agent_ya_, "blue", mroute, 2, "10.1.1.5", agent_yb_);
+        VerifyOListElem(agent_ya_, "blue", mroute, 2, "10.1.1.6", agent_yc_);
+        VerifyOListElem(agent_yb_, "blue", mroute, 1, "10.1.1.4", agent_ya_);
+        VerifyOListElem(agent_yc_, "blue", mroute, 2, "10.1.1.4", agent_ya_);
+        VerifyOListElem(agent_yc_, "blue", mroute, 2, "10.1.1.3", agent_xc_);
 
-    VerifyOListElem(agent_ya_, "blue", mroute, 2, "10.1.1.5", agent_yb_);
-    VerifyOListElem(agent_ya_, "blue", mroute, 2, "10.1.1.6", agent_yc_);
-    VerifyOListElem(agent_yb_, "blue", mroute, 1, "10.1.1.4", agent_ya_);
-    VerifyOListElem(agent_yc_, "blue", mroute, 2, "10.1.1.4", agent_ya_);
-    VerifyOListElem(agent_yc_, "blue", mroute, 2, "10.1.1.3", agent_xc_);
+        // Verify the labels used by all agents.
+        VerifyLabel(agent_xa_, "blue", mroute, 10000, 19999);
+        VerifyLabel(agent_xb_, "blue", mroute, 20000, 29999);
+        VerifyLabel(agent_xc_, "blue", mroute, 30000, 39999);
+        VerifyLabel(agent_ya_, "blue", mroute, 40000, 49999);
+        VerifyLabel(agent_yb_, "blue", mroute, 50000, 59999);
+        VerifyLabel(agent_yc_, "blue", mroute, 60000, 69999);
+
+        // Update the RouterIDs of X and Y as appropriate.
+        Reconfigure(config_tmpl2_new);
+        task_util::WaitForIdle();
+    }
 
     // Delete mcast route for all agents.
     agent_xa_->DeleteMcastRoute("blue", mroute);
