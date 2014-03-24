@@ -101,14 +101,12 @@ else:
     lib_rtarget = Dir('..').path + '/librtarget.a'
     env.Prepend(LINKFLAGS = ['-Wl,-force_load,' + lib_rtarget])
 
-env.Append(LIBS = ['bgp_inet'])
-
-ermvpn_prefix_test = env.Program('ermvpn_prefix_test',
-                                 ['ermvpn_prefix_test.cc'])
+ermvpn_prefix_test = env.UnitTest('ermvpn_prefix_test',
+                                  ['ermvpn_prefix_test.cc'])
 env.Alias('src/bgp/ermvpn:ermvpn_prefix_test', ermvpn_prefix_test)
 
-ermvpn_table_test = env.Program('ermvpn_table_test',
-                                ['ermvpn_table_test.cc'])
+ermvpn_table_test = env.UnitTest('ermvpn_table_test',
+                                 ['ermvpn_table_test.cc'])
 env.Alias('src/bgp/ermvpn:ermvpn_table_test', ermvpn_table_test)
 
 test_suite = [
