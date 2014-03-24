@@ -624,7 +624,7 @@ void BgpPeer::SendOpen(TcpSession *session) {
     openmsg.as_num = server->autonomous_system();
     openmsg.holdtime = state_machine_->GetConfiguredHoldTime();
     openmsg.identifier = local_bgp_id_;
-    static const uint8_t cap_mp[4][4] = {
+    static const uint8_t cap_mp[5][4] = {
         { 0, BgpAf::IPv4,  0, BgpAf::Unicast },
         { 0, BgpAf::IPv4,  0, BgpAf::Vpn },
         { 0, BgpAf::L2Vpn, 0, BgpAf::EVpn },
