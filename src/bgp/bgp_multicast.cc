@@ -882,7 +882,7 @@ void McastTreeManager::TreeNodeListener(McastManagerPartition *partition,
         route->SetState(table_, listener_id_, forwarder);
 
         // Update the local tree route if our RouterId has changed.
-        UpdateLocalTreeRoute();
+        sg_entry->UpdateLocalTreeRoute();
 
     } else {
 
