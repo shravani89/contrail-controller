@@ -881,8 +881,13 @@ void McastTreeManager::TreeNodeListener(McastManagerPartition *partition,
         sg_entry->AddForwarder(forwarder);
         route->SetState(table_, listener_id_, forwarder);
 
-        // Update the local tree route if our RouterId has changed.
-        sg_entry->UpdateLocalTreeRoute();
+        // Update local tree route if our RouterId has changed. Ideally,
+        // we should trigger an update of all local trees routes when we
+        // detect a change in RouterId. Instead, we currently check and
+        // update the local route when we detect a new local route from
+        // another node.
+        if (route->GetPrefix().type() == ErmVpnPrefix::LocalTreeRoute)
+            sg_entry->UpdateLocalTreeRoute();
 
     } else {
 
