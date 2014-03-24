@@ -1071,7 +1071,8 @@ void BgpPeer::RegisterToVpnTables(bool established) {
                            table, "Register peer with the table");
         if (table) {
             membership_mgr->Register(this, table, policy_, -1,
-                boost::bind(&BgpPeer::MembershipRequestCallback, this, _1, _2));
+                boost::bind(&BgpPeer::MembershipRequestCallback, this, _1, _2,
+                            established));
             membership_req_pending_++;
         }
     }
