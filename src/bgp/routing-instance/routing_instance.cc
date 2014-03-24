@@ -901,9 +901,13 @@ BgpTable *RoutingInstance::ErmVpnTableCreate(BgpServer *server) {
     // For all the RouteTarget in the server, add the VPN table as
     // importer and exporter
     RoutePathReplicator *replicator = server->replicator(Address::ERMVPN);
-    for (RoutePathReplicator::RtGroupMap::const_iterator it =
-         replicator->GetRtGroupMap().begin();
-        it != replicator->GetRtGroupMap().end(); ++it) {
+    for (RTargetGroupMgr::RtGroupMap::iterator it =
+         server->rtarget_group_mgr()->GetRtGroupMap().begin();
+        it != server->rtarget_group_mgr()->GetRtGroupMap().end(); ++it) {
+        RtGroup *group = it->second;
+        if ((group->GetImportTables(Address::ERMVPN).size() == 0) &&
+            (group->GetExportTables(Address::ERMVPN).size() == 0))
+            continue;
         replicator->Join(vpntbl, it->first, true);
         replicator->Join(vpntbl, it->first, false);
     }
