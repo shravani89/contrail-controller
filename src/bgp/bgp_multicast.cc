@@ -526,6 +526,23 @@ void McastSGEntry::DeleteLocalTreeRoute() {
     local_tree_route_ = NULL;
 }
 
+//
+// Update the LocalTreeRoute for this McastSGEntry if RouterId has changed.
+//
+void McastSGEntry::UpdateLocalTreeRoute() {
+    if (!local_tree_route_)
+        return;
+
+    // Bail if the RouterId hasn't changed.
+    const BgpServer *server = partition_->server();
+    Ip4Address router_id = local_tree_route_->GetPrefix().router_id();
+    if (router_id.to_ulong() == server->bgp_identifier())
+        return;
+
+    // Add and delete the route.
+    DeleteLocalTreeRoute();
+    AddLocalTreeRoute();
+}
 
 //
 // Update relevant [Local|Global]TreeRoutes for the McastSGEntry.
@@ -863,6 +880,9 @@ void McastTreeManager::TreeNodeListener(McastManagerPartition *partition,
         McastForwarder *forwarder = new McastForwarder(sg_entry, route);
         sg_entry->AddForwarder(forwarder);
         route->SetState(table_, listener_id_, forwarder);
+
+        // Update the local tree route if our RouterId has changed.
+        UpdateLocalTreeRoute();
 
     } else {
 
