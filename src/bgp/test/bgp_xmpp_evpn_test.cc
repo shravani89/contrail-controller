@@ -1483,23 +1483,30 @@ TEST_F(BgpXmppEvpnTest2, RouteUpdate) {
     TASK_UTIL_EXPECT_EQ("192.168.1.1", nh1);
     TASK_UTIL_EXPECT_EQ("blue", rt1->entry.virtual_network);
 
+    // Remember the CRC for rt1.
+    boost::crc_32_type rt1_crc;
+    rt1->CalculateCrc(&rt1_crc);
+
     // Change the route from agent A.
     agent_a_->AddEnetRoute("blue", eroute_a.str(), "192.168.2.1");
     task_util::WaitForIdle();
 
     // Wait for the route to get updated on agent B.
     int count = 0;
-    const autogen::EnetItemType *rt2 =
-         agent_b_->EnetRouteLookup("blue", "aa:00:00:00:00:01,10.1.1.1/32");
-    while ((rt2 == rt1 || !rt2) && count++ < 10000) {
+    const autogen::EnetItemType *rt2;
+    boost::crc_32_type rt2_crc;
+    do {
         rt2 = agent_b_->EnetRouteLookup("blue","aa:00:00:00:00:01,10.1.1.1/32");
+        if (rt2)
+            rt2->CalculateCrc(&rt2_crc);
         usleep(1000);
-    }
-    LOG(DEBUG, "rt1 = " << rt1 << " rt2 = " << rt2);
+    } while ((!rt2 || rt2_crc == rt1_crc) && count++ < 10000);
+    LOG(DEBUG, "rt1_crc = " << rt1_crc << " rt2_crc = " << rt2_crc);
 
     // Verify that the route is updated on agent B.
     TASK_UTIL_EXPECT_EQ(1, agent_b_->EnetRouteCount());
     TASK_UTIL_EXPECT_EQ(1, agent_b_->EnetRouteCount("blue"));
+    rt2 = agent_b_->EnetRouteLookup("blue","aa:00:00:00:00:01,10.1.1.1/32");
     TASK_UTIL_EXPECT_TRUE(rt2 != NULL);
 
     TASK_UTIL_EXPECT_EQ("192.168.2.1",
