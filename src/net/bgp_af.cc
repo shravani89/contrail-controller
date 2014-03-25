@@ -70,8 +70,11 @@ void BgpAf::FamilyToAfiSafi(Address::Family fmly, uint16_t &afi, uint8_t &safi) 
     } else if (fmly == Address::INETVPN) {
         afi = BgpAf::IPv4;
         safi = BgpAf::Vpn;
+    } else if (fmly == Address::ERMVPN) {
+        afi = BgpAf::IPv4;
+        safi = BgpAf::ErmVpn;
     } else if (fmly == Address::EVPN) {
-        afi = BgpAf::L2Vpn; 
+        afi = BgpAf::L2Vpn;
         safi = BgpAf::EVpn;
     } else if (fmly == Address::RTARGET) {
         afi = BgpAf::IPv4; 
