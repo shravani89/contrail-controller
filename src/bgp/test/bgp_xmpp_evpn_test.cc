@@ -1475,7 +1475,7 @@ TEST_F(BgpXmppEvpnTest2, RouteUpdate) {
     // Verify that the route showed up on agent B.
     TASK_UTIL_EXPECT_EQ(1, agent_b_->EnetRouteCount());
     TASK_UTIL_EXPECT_EQ(1, agent_b_->EnetRouteCount("blue"));
-    autogen::EnetItemType *rt1 =
+    const autogen::EnetItemType *rt1 =
         agent_b_->EnetRouteLookup("blue", "aa:00:00:00:00:01,10.1.1.1/32");
     TASK_UTIL_EXPECT_TRUE(rt1 != NULL);
     int label1 = rt1->entry.next_hops.next_hop[0].label;
@@ -1493,14 +1493,14 @@ TEST_F(BgpXmppEvpnTest2, RouteUpdate) {
 
     // Wait for the route to get updated on agent B.
     int count = 0;
-    autogen::EnetItemType *rt2;
+    const autogen::EnetItemType *rt2;
     boost::crc_32_type rt2_crc;
     do {
         rt2 = agent_b_->EnetRouteLookup("blue","aa:00:00:00:00:01,10.1.1.1/32");
         if (rt2)
             rt2->CalculateCrc(&rt2_crc);
         usleep(1000);
-    } while ((!rt2 || rt2_crc == rt1_crc) && count++ < 10000);
+    } while ((!rt2 || rt2_crc.checksum() == rt1_crc.checksum()) && count++ < 10000);
     LOG(DEBUG, "rt1_crc = " << rt1_crc << " rt2_crc = " << rt2_crc);
 
     // Verify that the route is updated on agent B.
