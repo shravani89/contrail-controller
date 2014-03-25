@@ -264,8 +264,8 @@ TEST_F(BgpXmppEvpnTest1, 1AgentRouteUpdate) {
     // Verify that the route showed up on the agent.
     TASK_UTIL_EXPECT_EQ(1, agent_a_->EnetRouteCount());
     TASK_UTIL_EXPECT_EQ(1, agent_a_->EnetRouteCount("blue"));
-    const autogen::EnetItemType *rt1 =
-        agent_a_->EnetRouteLookup("blue", "aa:00:00:00:00:01,10.1.1.1/32");
+    autogen::EnetItemType *rt1 = const_cast<autogen::EnetItemType *>
+        (agent_a_->EnetRouteLookup("blue", "aa:00:00:00:00:01,10.1.1.1/32"));
     TASK_UTIL_EXPECT_TRUE(rt1 != NULL);
     int label1 = rt1->entry.next_hops.next_hop[0].label;
     string nh1 = rt1->entry.next_hops.next_hop[0].address;
@@ -463,8 +463,8 @@ TEST_F(BgpXmppEvpnTest1, 2AgentRouteUpdate) {
     // Verify that the route showed up on agent B.
     TASK_UTIL_EXPECT_EQ(1, agent_b_->EnetRouteCount());
     TASK_UTIL_EXPECT_EQ(1, agent_b_->EnetRouteCount("blue"));
-    const autogen::EnetItemType *rt1 =
-        agent_b_->EnetRouteLookup("blue", "aa:00:00:00:00:01,10.1.1.1/32");
+    autogen::EnetItemType *rt1 = const_cast<autogen::EnetItemType *>
+        (agent_b_->EnetRouteLookup("blue", "aa:00:00:00:00:01,10.1.1.1/32"));
     TASK_UTIL_EXPECT_TRUE(rt1 != NULL);
     int label1 = rt1->entry.next_hops.next_hop[0].label;
     string nh1 = rt1->entry.next_hops.next_hop[0].address;
