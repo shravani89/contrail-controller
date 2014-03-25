@@ -46,7 +46,6 @@ env.Append(LIBS = ['xmpp', 'xmpp_unicast',
 
 if sys.platform == 'darwin':
     bgp_inet = Dir('../../inet').path + '/libbgp_inet.a'
-    bgp_inetmcast = Dir('../../inetmcast').path + '/libbgp_inetmcast.a'
     bgp_enet = Dir('../../enet').path + '/libbgp_enet.a'
     bgp_ermvpn = Dir('../../ermvpn').path + '/libbgp_ermvpn.a'
     bgp_evpn = Dir('../../evpn').path + '/libbgp_evpn.a'
