@@ -234,12 +234,6 @@ const char *XmppEcmpTest::config_tmpl = "\
 
 // Initialize mock agents and from xmpp sessions with the control-node.
 void XmppEcmpTest::Initialize() {
-    node_a_->bgp_server()->Configure(config_tmpl);
-    task_util::WaitForIdle();
-
-    node_b_->bgp_server()->Configure(config_tmpl);
-    task_util::WaitForIdle();
-
     const char *ri_1 = "red";
     const char *ri_2 = "blue";
 
