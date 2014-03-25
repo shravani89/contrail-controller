@@ -1487,7 +1487,7 @@ void BgpXmppChannel::ProcessDeferredSubscribeRequest(RoutingInstance *instance,
             (table->family() == Address::EVPN)    || 
             (table->family() == Address::RTARGET))
             continue;
-        if (rt_instance->IsDefaultRoutingInstance() &&
+        if (instance->IsDefaultRoutingInstance() &&
             table->family() == Address::ERMVPN)
             continue;
 
