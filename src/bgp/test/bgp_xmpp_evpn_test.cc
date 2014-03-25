@@ -166,8 +166,8 @@ protected:
     ServerThread thread_;
     BgpServerTestPtr bs_x_;
     XmppServer *xs_x_;
-    boost::scoped_ptr<test::NetworkAgentMock> agent_a_;
-    boost::scoped_ptr<test::NetworkAgentMock> agent_b_;
+    test::NetworkAgentMockPtr agent_a_;
+    test::NetworkAgentMockPtr agent_b_;
     boost::scoped_ptr<BgpXmppChannelManagerMock> bgp_channel_manager_;
 };
 
@@ -1297,14 +1297,35 @@ protected:
         bs_y_->Configure(config);
     }
 
+    autogen::EnetItemType *VerifyRouteUpdated(test::NetworkAgentMockPtr agent,
+        const string net, const string prefix,
+        const boost::crc_32_type &old_crc) {
+        static int max_retry = 10000;
+
+        int count = 0;
+        autogen::EnetItemType *rt;
+        boost::crc_32_type rt_crc;
+        do {
+            rt = const_cast<autogen::EnetItemType *>
+                (agent->EnetRouteLookup(net, prefix));
+            if (rt)
+                rt->CalculateCrc(&rt_crc);
+            usleep(1000);
+        } while ((!rt || rt_crc.checksum() == old_crc.checksum()) &&
+                 (count++ < max_retry));
+
+        EXPECT_NE(max_retry, count);
+        return rt;
+    }
+
     EventManager evm_;
     ServerThread thread_;
     BgpServerTestPtr bs_x_;
     BgpServerTestPtr bs_y_;
     XmppServer *xs_x_;
     XmppServer *xs_y_;
-    boost::scoped_ptr<test::NetworkAgentMock> agent_a_;
-    boost::scoped_ptr<test::NetworkAgentMock> agent_b_;
+    test::NetworkAgentMockPtr agent_a_;
+    test::NetworkAgentMockPtr agent_b_;
     boost::scoped_ptr<BgpXmppChannelManagerMock> cm_x_;
     boost::scoped_ptr<BgpXmppChannelManagerMock> cm_y_;
 };
@@ -1493,16 +1514,8 @@ TEST_F(BgpXmppEvpnTest2, RouteUpdate) {
 
     // Wait for the route to get updated on agent B.
     int count = 0;
-    autogen::EnetItemType *rt2;
-    boost::crc_32_type rt2_crc;
-    do {
-        rt2 = const_cast<autogen::EnetItemType *>
-            (agent_b_->EnetRouteLookup("blue", "aa:00:00:00:00:01,10.1.1.1/32"));
-        if (rt2)
-            rt2->CalculateCrc(&rt2_crc);
-        usleep(1000);
-    } while ((!rt2 || rt2_crc.checksum() == rt1_crc.checksum()) && count++ < 10000);
-    LOG(DEBUG, "rt1_crc = " << rt1_crc.checksum() << " rt2_crc = " << rt2_crc.checksum());
+    autogen::EnetItemType *rt2 = VerifyRouteUpdated(agent_b_, "blue",
+        "aa:00:00:00:00:01,10.1.1.1/32", rt1_crc);
 
     // Verify that the route is updated on agent B.
     TASK_UTIL_EXPECT_EQ(1, agent_b_->EnetRouteCount());
