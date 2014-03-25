@@ -438,7 +438,7 @@ TEST_F(BgpXmppUnitTest, Connection) {
     req->Release();
     WAIT_EQ(1, validate_done_);
 
-    result = list_of(1)(7); // inet, ermvpn, enet
+    result = list_of(2)(7); // inet, ermvpn, enet
     Sandesh::set_response_callback(boost::bind(ValidateNeighborResponse,
                                    _1, result));
     BgpNeighborReq *nbr_req = new BgpNeighborReq;
