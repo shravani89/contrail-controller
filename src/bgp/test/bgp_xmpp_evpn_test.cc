@@ -1501,7 +1501,7 @@ TEST_F(BgpXmppEvpnTest2, RouteUpdate) {
             rt2->CalculateCrc(&rt2_crc);
         usleep(1000);
     } while ((!rt2 || rt2_crc.checksum() == rt1_crc.checksum()) && count++ < 10000);
-    LOG(DEBUG, "rt1_crc = " << rt1_crc << " rt2_crc = " << rt2_crc);
+    LOG(DEBUG, "rt1_crc = " << rt1_crc.checksum() << " rt2_crc = " << rt2_crc.checksum());
 
     // Verify that the route is updated on agent B.
     TASK_UTIL_EXPECT_EQ(1, agent_b_->EnetRouteCount());
