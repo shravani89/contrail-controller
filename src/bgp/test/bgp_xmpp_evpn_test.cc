@@ -1495,6 +1495,7 @@ TEST_F(BgpXmppEvpnTest2, RouteUpdate) {
         rt2 = agent_b_->EnetRouteLookup("blue","aa:00:00:00:00:01,10.1.1.1/32");
         usleep(1000);
     }
+    LOG(DEBUG, "rt1 = %p rt2 = %p", rt1, rt2);
 
     // Verify that the route is updated on agent B.
     TASK_UTIL_EXPECT_EQ(1, agent_b_->EnetRouteCount());

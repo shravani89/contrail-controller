@@ -194,7 +194,7 @@ void BgpPeerTest::StartKeepaliveTimerUnlocked() {
     if (holdtime <= 0)
         return;
 
-    keepalive_timer_->Start(10,
+    keepalive_timer_->Start(30000,
         boost::bind(&BgpPeer::KeepaliveTimerExpired, this),
         boost::bind(&BgpPeer::KeepaliveTimerErrorHandler, this, _1, _2));
 }
