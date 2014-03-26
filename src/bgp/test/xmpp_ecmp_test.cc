@@ -193,6 +193,7 @@ const char *XmppEcmpTest::config_tmpl = "\
         <identifier>192.168.0.1</identifier>\
         <address>127.0.0.1</address>\
         <port>%d</port>\
+        <autonomous-system>64512</autonomous-system>\
         <session to=\'B\'>\
             <address-families>\
                 <family>e-vpn</family>\
@@ -205,6 +206,7 @@ const char *XmppEcmpTest::config_tmpl = "\
         <identifier>192.168.0.2</identifier>\
         <address>127.0.0.1</address>\
         <port>%d</port>\
+        <autonomous-system>64512</autonomous-system>\
         <session to=\'A\'>\
             <address-families>\
                 <family>e-vpn</family>\
