@@ -220,6 +220,7 @@ const char *XmppEcmpTest::config_tmpl = "\
         <network-id>102</network-id>\
     </virtual-network>\
     <routing-instance name='red'>\
+        <virtual-network>red-vn</virtual-network>\
         <vrf-target>target:1:1</vrf-target>\
         <vrf-target>\
             target:1:2\
@@ -227,6 +228,7 @@ const char *XmppEcmpTest::config_tmpl = "\
         </vrf-target>\
     </routing-instance>\
     <routing-instance name='blue'>\
+        <virtual-network>blue-vn</virtual-network>\
         <vrf-target>target:1:2</vrf-target>\
         <vrf-target>\
             target:1:1\
@@ -235,6 +237,7 @@ const char *XmppEcmpTest::config_tmpl = "\
     </routing-instance>\
 </config>\
 ";
+
 
 // Initialize mock agents and from xmpp sessions with the control-node.
 void XmppEcmpTest::Initialize() {
