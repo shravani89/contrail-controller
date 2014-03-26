@@ -213,6 +213,12 @@ const char *XmppEcmpTest::config_tmpl = "\
             </address-families>\
         </session>\
     </bgp-router>\
+    <virtual-network name='red-vn'>\
+        <network-id>101</network-id>\
+    </virtual-network>\
+    <virtual-network name='blue-vn'>\
+        <network-id>102</network-id>\
+    </virtual-network>\
     <routing-instance name='red'>\
         <vrf-target>target:1:1</vrf-target>\
         <vrf-target>\

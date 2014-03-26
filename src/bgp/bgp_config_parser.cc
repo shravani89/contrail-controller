@@ -498,6 +498,7 @@ bool BgpConfigParser::Parse(const std::string &content)  {
         BGP_LOG_STR(BgpMessage, SandeshLevel::SYS_WARN, BGP_LOG_FLAG_SYSLOG,
                     "Unable to load XML document. (status="
                      << result.status << ", offset=" << result.offset << ")");
+        assert(false);
         return false;
     }
 
