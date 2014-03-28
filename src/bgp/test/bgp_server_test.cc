@@ -54,14 +54,8 @@ public:
             boost::bind(&StateMachine::TimerErrorHanlder, this, _1, _2));
     }
 
-    virtual int hold_time_msecs() const {
-        if (hold_time_msec_)
-            return hold_time_msec_;
-        return StateMachine::hold_time_msecs();
-    }
+    virtual int hold_time_msecs() const { return 30; }
 };
-
-int StateMachineTest::hold_time_msec_ = 0;
 
 class BgpServerUnitTest : public ::testing::Test {
 protected:
@@ -299,18 +293,11 @@ TEST_F(BgpServerUnitTest, Connection) {
     VerifyPeers(3, 2);
 }
 
-// Run this test with a small (30ms) hold time so that a keepalive sent very
-// frequently, once every 10ms or so.
 TEST_F(BgpServerUnitTest, LotsOfKeepAlives) {
-    int hold_time_orig = StateMachineTest::hold_time_msec_;
-    StateMachineTest::hold_time_msec_ = 30;
     BgpPeerTest::verbose_name(true);
     SetupPeers(3, a_->session_manager()->GetPort(),
                b_->session_manager()->GetPort(), true);
     VerifyPeers(3, 500);
-
-    // Revert the hold time to its original default value.
-    StateMachineTest::hold_time_msec_ = hold_time_orig;
 }
 
 TEST_F(BgpServerUnitTest, ChangeAsNumber1) {
