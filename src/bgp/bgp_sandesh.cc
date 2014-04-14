@@ -59,7 +59,7 @@ public:
         BgpRoute *route;
 
         bool exact_lookup = false;
-        if (!req->get_prefix().empty() && !req_->get_longer_match()) {
+        if (!req_->get_prefix().empty() && !req_->get_longer_match()) {
             exact_lookup = true;
             auto_ptr<DBEntry> key = table->AllocEntryStr(req_->get_prefix());
             route = static_cast<BgpRoute *>(partition->Find(key.get()));
@@ -126,10 +126,10 @@ bool ShowRouteHandler::CallbackS1(const Sandesh *sr,
     BgpSandeshContext *bsc = static_cast<BgpSandeshContext *>(req->client_context());
     RoutingInstanceMgr *rim = bsc->bgp_server->routing_instance_mgr();
 
-    string exact_routing_instance = req_->get_routing_instance();
+    string exact_routing_instance = req->get_routing_instance();
     string start_routing_instance;
     if (exact_routing_instance.empty()) {
-        start_routing_instance = req_->get_start_routing_instance();
+        start_routing_instance = req->get_start_routing_instance();
     } else {
         start_routing_instance = exact_routing_instance;
     }
