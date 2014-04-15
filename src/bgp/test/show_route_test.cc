@@ -298,7 +298,7 @@ protected:
 
 int ShowRouteTestBase::validate_done_;
 
-class ShowRouteTest1 : ShowRouteTestBase {
+class ShowRouteTest1 : public ShowRouteTestBase {
 };
 
 TEST_F(ShowRouteTest1, Basic) {
@@ -430,7 +430,7 @@ TEST_F(ShowRouteTest1, Basic) {
     DeleteInetVpnRoute("2:20:192.168.33.0/24", peers[2], 0);
 }
 
-class ShowRouteTest2 : ShowRouteTestBase {
+class ShowRouteTest2 : public ShowRouteTestBase {
 protected:
     virtual void SetUp() {
         ShowRouteTestBase::SetUp();
