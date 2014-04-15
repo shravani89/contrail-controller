@@ -126,8 +126,15 @@ bool ShowRouteHandler::CallbackS1(const Sandesh *sr,
     BgpSandeshContext *bsc = static_cast<BgpSandeshContext *>(req->client_context());
     RoutingInstanceMgr *rim = bsc->bgp_server->routing_instance_mgr();
 
-    string exact_routing_instance = req->get_routing_instance();
+    string exact_routing_table = req->get_routing_table();
+    string exact_routing_instance;
     string start_routing_instance;
+    if (exact_routing_table.empty()) {
+        exact_routing_instance = req->get_routing_instance();
+    } else {
+        exact_routing_instance =
+            RoutingInstance::GetVrfFromTableName(exact_routing_table);
+    }
     if (exact_routing_instance.empty()) {
         start_routing_instance = req->get_start_routing_instance();
     } else {
