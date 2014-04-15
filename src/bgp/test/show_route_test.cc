@@ -459,7 +459,7 @@ TEST_F(ShowRouteTest, ExactRoutingInstance) {
     DeleteInetRoute("192.168.12.0/24", peers[1], 1, "red");
     DeleteInetRoute("192.168.13.0/24", peers[2], 0, "red");
 
-    DeleteInetRoute("192.240.11.0/24", peers[0], 2, "blue");
+    DeleteInetRoute("192.168.11.0/24", peers[0], 2, "blue");
     DeleteInetRoute("192.168.12.0/24", peers[1], 1, "blue");
     DeleteInetRoute("192.168.13.0/24", peers[2], 0, "blue");
 }
@@ -493,11 +493,11 @@ TEST_F(ShowRouteTest, ExactRoutingTable) {
         TASK_UTIL_EXPECT_EQ(1, validate_done_);
     }
 
-    DeleteInetRoute("192.240.11.0/24", peers[0], 2, "red");
+    DeleteInetRoute("192.168.11.0/24", peers[0], 2, "red");
     DeleteInetRoute("192.168.12.0/24", peers[1], 1, "red");
     DeleteInetRoute("192.168.13.0/24", peers[2], 0, "red");
 
-    DeleteInetRoute("192.240.11.0/24", peers[0], 2, "blue");
+    DeleteInetRoute("192.168.11.0/24", peers[0], 2, "blue");
     DeleteInetRoute("192.168.12.0/24", peers[1], 1, "blue");
     DeleteInetRoute("192.168.13.0/24", peers[2], 0, "blue");
 }
