@@ -578,6 +578,25 @@ TEST_F(ShowRouteTest2, ExactPrefix3) {
     }
 }
 
+TEST_F(ShowRouteTest2, MatchingPrefix1) {
+    BgpSandeshContext sandesh_context;
+    sandesh_context.bgp_server = a_.get();
+    Sandesh::set_client_context(&sandesh_context);
+
+    const char *prefix_formats[] = { "192.168.0.0/16", "192.168/16" };
+    BOOST_FOREACH(const char *prefix, prefix_formats) {
+        ShowRouteReq *show_req = new ShowRouteReq;
+        vector<int> result = list_of(3)(3);
+        Sandesh::set_response_callback(
+            boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
+        show_req->set_prefix(prefix);
+        validate_done_ = 0;
+        show_req->HandleRequest();
+        show_req->Release();
+        TASK_UTIL_EXPECT_EQ(1, validate_done_);
+    }
+}
+
 class TestEnvironment : public ::testing::Environment {
     virtual ~TestEnvironment() { }
 };
