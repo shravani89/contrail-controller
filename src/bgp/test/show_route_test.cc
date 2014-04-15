@@ -443,7 +443,7 @@ TEST_F(ShowRouteTest, ExactRoutingInstance) {
     Sandesh::set_client_context(&sandesh_context);
 
     char *instance_names[] = { "blue", "red" };
-    BOOST_FOREACH(string instance, instance_names) {
+    BOOST_FOREACH(const char *instance, instance_names) {
         ShowRouteReq *show_req = new ShowRouteReq;
         result = list_of(3);
         Sandesh::set_response_callback(
@@ -481,7 +481,7 @@ TEST_F(ShowRouteTest, ExactRoutingTable) {
     Sandesh::set_client_context(&sandesh_context);
 
     char *table_names[] = { "blue.inet.0", "red.inet.0" };
-    BOOST_FOREACH(string table, table_names) {
+    BOOST_FOREACH(const char *table, table_names) {
         ShowRouteReq *show_req = new ShowRouteReq;
         result = list_of(3);
         Sandesh::set_response_callback(
