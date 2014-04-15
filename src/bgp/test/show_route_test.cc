@@ -498,7 +498,7 @@ TEST_F(ShowRouteTest2, ExactRoutingInstance2) {
     }
 }
 
-TEST_F(ShowRouteTest2, ExactRoutingTable) {
+TEST_F(ShowRouteTest2, ExactRoutingTable1) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
@@ -507,6 +507,25 @@ TEST_F(ShowRouteTest2, ExactRoutingTable) {
     BOOST_FOREACH(const char *table, table_names) {
         ShowRouteReq *show_req = new ShowRouteReq;
         vector<int> result = list_of(3);
+        Sandesh::set_response_callback(
+            boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
+        show_req->set_routing_table(table);
+        validate_done_ = 0;
+        show_req->HandleRequest();
+        show_req->Release();
+        TASK_UTIL_EXPECT_EQ(1, validate_done_);
+    }
+}
+
+TEST_F(ShowRouteTest2, ExactRoutingTable2) {
+    BgpSandeshContext sandesh_context;
+    sandesh_context.bgp_server = a_.get();
+    Sandesh::set_client_context(&sandesh_context);
+
+    const char *table_names[] = { "blu.inet.0", "red.inet.1" };
+    BOOST_FOREACH(const char *table, table_names) {
+        ShowRouteReq *show_req = new ShowRouteReq;
+        vector<int> result;
         Sandesh::set_response_callback(
             boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
         show_req->set_routing_table(table);
@@ -578,7 +597,7 @@ TEST_F(ShowRouteTest2, ExactPrefix3) {
     }
 }
 
-TEST_F(ShowRouteTest2, MatchingPrefix1) {
+TEST_F(ShowRouteTest2, MatchingPrefix1a) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
@@ -598,7 +617,7 @@ TEST_F(ShowRouteTest2, MatchingPrefix1) {
     }
 }
 
-TEST_F(ShowRouteTest2, MatchingPrefix2) {
+TEST_F(ShowRouteTest2, MatchingPrefix1b) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
@@ -615,7 +634,7 @@ TEST_F(ShowRouteTest2, MatchingPrefix2) {
     TASK_UTIL_EXPECT_EQ(1, validate_done_);
 }
 
-TEST_F(ShowRouteTest2, MatchingPrefix3) {
+TEST_F(ShowRouteTest2, MatchingPrefix2a) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
@@ -636,7 +655,7 @@ TEST_F(ShowRouteTest2, MatchingPrefix3) {
     }
 }
 
-TEST_F(ShowRouteTest2, MatchingPrefix4) {
+TEST_F(ShowRouteTest2, MatchingPrefix2b) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
@@ -657,7 +676,7 @@ TEST_F(ShowRouteTest2, MatchingPrefix4) {
     }
 }
 
-TEST_F(ShowRouteTest2, MatchingPrefix5) {
+TEST_F(ShowRouteTest2, MatchingPrefix3a) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
@@ -678,7 +697,7 @@ TEST_F(ShowRouteTest2, MatchingPrefix5) {
     }
 }
 
-TEST_F(ShowRouteTest2, MatchingPrefix6) {
+TEST_F(ShowRouteTest2, MatchingPrefix3b) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
