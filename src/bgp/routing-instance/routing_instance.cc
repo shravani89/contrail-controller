@@ -935,7 +935,7 @@ string RoutingInstance::GetVrfFromTableName(const string table) {
     size_t pos1 = table.rfind('.');
     if (pos1 == string::npos)
         return "__unknown__";
-    size_t pos2 = table.rfind('.', pos1);
+    size_t pos2 = table.rfind('.', pos1 - 1);
     if (pos2 == string::npos)
         return "__unknown__";
 
