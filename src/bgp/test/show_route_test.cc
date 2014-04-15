@@ -31,6 +31,39 @@ using namespace boost::assign;
 using namespace boost::asio;
 using namespace std;
 
+static const char config_tmpl[] = "\
+<config>\
+    <bgp-router name=\'A\'>\
+        <identifier>192.168.0.1</identifier>\
+        <address>127.0.0.1</address>\
+        <port>%d</port>\
+        <session to='B'/>\
+        <session to='B'/>\
+        <session to='B'/>\
+    </bgp-router>\
+    <bgp-router name=\'B\'>\
+        <identifier>192.168.0.2</identifier>\
+        <address>127.0.0.1</address>\
+        <port>%d</port>\
+        <session to='A'/>\
+        <session to='A'/>\
+        <session to='A'/>\
+    </bgp-router>\
+    <routing-instance name =\"red\">\
+    <bgp-router name=\'A\'>\
+        <identifier>192.168.1.1</identifier>\
+        <address>10.0.0.1</address>\
+    </bgp-router>\
+    </routing-instance>\
+    <routing-instance name =\"blue\">\
+    <bgp-router name=\'A\'>\
+        <identifier>192.168.2.1</identifier>\
+        <address>10.0.1.1</address>\
+    </bgp-router>\
+    </routing-instance>\
+</config>\
+";
+
 class ShowRouteTest : public ::testing::Test {
 public:
     bool IsReady() const { return true; }
@@ -59,6 +92,32 @@ protected:
         if (thread_.get() != NULL) {
             thread_->Join();
         }
+    }
+
+    void Configure() {
+        char config[4096];
+        int port_a = a_->session_manager()->GetPort();
+        int port_b = b_->session_manager()->GetPort();
+        snprintf(config, sizeof(config), config_tmpl, port_a, port_b);
+        a_->Configure(config);
+        task_util::WaitForIdle();
+
+        BgpPeerTest *peers[3];
+        RibExportPolicy policy(BgpProto::IBGP, RibExportPolicy::BGP, 1, 0);
+        DB *db_a = a_.get()->database();
+
+        for (int j = 0; j < 3; j++) {
+            string uuid = BgpConfigParser::session_uuid("A", "B", j + 1);
+            TASK_UTIL_ASSERT_TRUE(a_->FindPeerByUuid(
+                BgpConfigManager::kMasterInstance, uuid) != NULL);
+            peers[j] = a_->FindPeerByUuid(
+                BgpConfigManager::kMasterInstance, uuid);
+            peers[j]->IsReady_fnc_ = boost::bind(&ShowRouteTest::IsReady, this);
+        }
+
+        InetTable *table_a =
+            static_cast<InetTable *>(db_a->FindTable("inet.0"));
+        assert(table_a);
     }
 
     void AddInetRoute(std::string prefix_str, BgpPeer *peer,
@@ -218,84 +277,29 @@ protected:
         for (size_t i = 0; i < resp->get_tables().size(); i++) {
             EXPECT_EQ(result[i], resp->get_tables()[i].routes.size());
             cout << resp->get_tables()[i].routing_instance << " "
-                    << resp->get_tables()[i].routing_table_name << endl;
-                for (size_t j = 0; j < resp->get_tables()[i].routes.size(); j++) {
-                    cout << resp->get_tables()[i].routes[j].prefix << " "
-                            << resp->get_tables()[i].routes[j].paths.size() << endl;
-                }
+                 << resp->get_tables()[i].routing_table_name << endl;
+            for (size_t j = 0; j < resp->get_tables()[i].routes.size(); j++) {
+                cout << resp->get_tables()[i].routes[j].prefix << " "
+                     << resp->get_tables()[i].routes[j].paths.size() << endl;
             }
-            cout << "*******************************************************"<<endl;
-            validate_done_ = 1;
         }
-        auto_ptr<EventManager> evm_;
-        auto_ptr<ServerThread> thread_;
-        auto_ptr<BgpServerTest> a_;
-        auto_ptr<BgpServerTest> b_;
-
-        static int validate_done_;
-    };
-    int ShowRouteTest::validate_done_;
-
-    namespace {
-
-    TEST_F(ShowRouteTest, Connection) {
-        // create a pair of BGP peers in server A and B.
-        //
-        static const char config_tmpl[] = "\
-    <config>\
-        <bgp-router name=\'A\'>\
-            <identifier>192.168.0.1</identifier>\
-            <address>127.0.0.1</address>\
-            <port>%d</port>\
-            <session to='B'/>\
-            <session to='B'/>\
-            <session to='B'/>\
-        </bgp-router>\
-        <bgp-router name=\'B\'>\
-            <identifier>192.168.0.2</identifier>\
-            <address>127.0.0.1</address>\
-            <port>%d</port>\
-            <session to='A'/>\
-            <session to='A'/>\
-            <session to='A'/>\
-        </bgp-router>\
-        <routing-instance name =\"red\">\
-        <bgp-router name=\'A\'>\
-            <identifier>192.168.1.1</identifier>\
-            <address>10.0.0.1</address>\
-        </bgp-router>\
-        </routing-instance>\
-        <routing-instance name =\"blue\">\
-        <bgp-router name=\'A\'>\
-            <identifier>192.168.2.1</identifier>\
-            <address>10.0.1.1</address>\
-        </bgp-router>\
-        </routing-instance>\
-    </config>\
-    ";
-        char config[4096];
-        int port_a = a_->session_manager()->GetPort();
-        int port_b = b_->session_manager()->GetPort();
-        snprintf(config, sizeof(config), config_tmpl, port_a, port_b);
-        a_->Configure(config);
-        // b_->Configure(config);
-        task_util::WaitForIdle();
-
-        BgpPeerTest *peers[3];
-        RibExportPolicy policy(BgpProto::IBGP, RibExportPolicy::BGP, 1, 0);
-        DB *db_a = a_.get()->database();
-
-        for (int j = 0; j < 3; j++) {
-            string uuid = BgpConfigParser::session_uuid("A", "B", j + 1);
-            TASK_UTIL_ASSERT_TRUE(a_->FindPeerByUuid(
-                BgpConfigManager::kMasterInstance, uuid) != NULL);
-            peers[j] = a_->FindPeerByUuid(
-                               BgpConfigManager::kMasterInstance, uuid);
-            peers[j]->IsReady_fnc_ = boost::bind(&ShowRouteTest::IsReady, this);
+        cout << "*******************************************************"<<endl;
+        validate_done_ = 1;
     }
 
-    InetTable *table_a = static_cast<InetTable *>(db_a->FindTable("inet.0"));
-    assert(table_a);
+    auto_ptr<EventManager> evm_;
+    auto_ptr<ServerThread> thread_;
+    auto_ptr<BgpServerTest> a_;
+    auto_ptr<BgpServerTest> b_;
+
+    static int validate_done_;
+};
+
+int ShowRouteTest::validate_done_;
+
+TEST_F(ShowRouteTest, Basic) {
+    Configure();
+    task_util::WaitForIdle();
 
     // Create 3 IPv4 prefixes and the corresponding keys.
     AddInetRoute("192.168.240.0/20", peers[0]);
@@ -420,9 +424,6 @@ protected:
     DeleteInetVpnRoute("2:20:192.240.11.0/12", peers[0], 2);
     DeleteInetVpnRoute("2:20:192.242.22.0/24", peers[1], 1);
     DeleteInetVpnRoute("2:20:192.168.33.0/24", peers[2], 0);
-}
-
-
 }
 
 class TestEnvironment : public ::testing::Environment {
