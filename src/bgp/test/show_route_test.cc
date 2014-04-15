@@ -591,6 +591,7 @@ TEST_F(ShowRouteTest2, MatchingPrefix1) {
             boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
         cout << "Checking prefix " << string(prefix) << endl;
         show_req->set_prefix(prefix);
+        show_req->set_longer_match(true);
         validate_done_ = 0;
         show_req->HandleRequest();
         show_req->Release();
