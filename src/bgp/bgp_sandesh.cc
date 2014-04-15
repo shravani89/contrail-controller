@@ -137,8 +137,9 @@ bool ShowRouteHandler::CallbackS1(const Sandesh *sr,
     RoutingInstanceMgr::NameIterator i =
         rim->name_lower_bound(start_routing_instance);
     uint32_t count = 0;
-    while (i != rim->name_end() &&
-           handler.match(exact_routing_instance, i->first)) {
+    while (i != rim->name_end()) {
+        if (!handler.match(exact_routing_instance, i->first))
+            break;
         RoutingInstance::RouteTableList::const_iterator j;
         if (req->get_start_routing_instance() == i->first)
             j = i->second->GetTables().lower_bound(req->get_start_routing_table());
