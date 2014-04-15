@@ -522,7 +522,9 @@ TEST_F(ShowRouteTest2, ExactRoutingTable2) {
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
 
-    const char *table_names[] = { "blu.inet.0", "red.inet.1" };
+    const char *table_names[] = {
+        "blu.inet.0", "red.inet.1", "inetmcast", "inetmcast.0"
+    };
     BOOST_FOREACH(const char *table, table_names) {
         ShowRouteReq *show_req = new ShowRouteReq;
         vector<int> result;
