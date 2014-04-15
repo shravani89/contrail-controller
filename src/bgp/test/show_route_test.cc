@@ -436,7 +436,7 @@ TEST_F(ShowRouteTest, ExactRoutingInstance) {
 
     AddInetRoute("192.168.11.0/24", peers[0], "blue");
     AddInetRoute("192.168.12.0/24", peers[1], "blue");
-    AddInetRoute("192.168.23.0/24", peers[2], "blue");
+    AddInetRoute("192.168.13.0/24", peers[2], "blue");
 
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
@@ -455,13 +455,13 @@ TEST_F(ShowRouteTest, ExactRoutingInstance) {
         TASK_UTIL_EXPECT_EQ(1, validate_done_);
     }
 
-    DeleteInetRoute("192.240.11.0/12", peers[0], 2, "red");
+    DeleteInetRoute("192.168.11.0/24", peers[0], 2, "red");
     DeleteInetRoute("192.168.12.0/24", peers[1], 1, "red");
     DeleteInetRoute("192.168.13.0/24", peers[2], 0, "red");
 
-    DeleteInetRoute("192.240.11.0/12", peers[0], 2, "blue");
+    DeleteInetRoute("192.240.11.0/24", peers[0], 2, "blue");
     DeleteInetRoute("192.168.12.0/24", peers[1], 1, "blue");
-    DeleteInetRoute("192.168.23.0/24", peers[2], 0, "blue");
+    DeleteInetRoute("192.168.13.0/24", peers[2], 0, "blue");
 }
 
 TEST_F(ShowRouteTest, ExactRoutingTable) {
@@ -474,7 +474,7 @@ TEST_F(ShowRouteTest, ExactRoutingTable) {
 
     AddInetRoute("192.168.11.0/24", peers[0], "blue");
     AddInetRoute("192.168.12.0/24", peers[1], "blue");
-    AddInetRoute("192.168.23.0/24", peers[2], "blue");
+    AddInetRoute("192.168.13.0/24", peers[2], "blue");
 
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
@@ -493,13 +493,13 @@ TEST_F(ShowRouteTest, ExactRoutingTable) {
         TASK_UTIL_EXPECT_EQ(1, validate_done_);
     }
 
-    DeleteInetRoute("192.240.11.0/12", peers[0], 2, "red");
+    DeleteInetRoute("192.240.11.0/24", peers[0], 2, "red");
     DeleteInetRoute("192.168.12.0/24", peers[1], 1, "red");
     DeleteInetRoute("192.168.13.0/24", peers[2], 0, "red");
 
-    DeleteInetRoute("192.240.11.0/12", peers[0], 2, "blue");
+    DeleteInetRoute("192.240.11.0/24", peers[0], 2, "blue");
     DeleteInetRoute("192.168.12.0/24", peers[1], 1, "blue");
-    DeleteInetRoute("192.168.23.0/24", peers[2], 0, "blue");
+    DeleteInetRoute("192.168.13.0/24", peers[2], 0, "blue");
 }
 
 class TestEnvironment : public ::testing::Environment {
