@@ -486,7 +486,7 @@ TEST_F(ShowRouteTest, ExactRoutingTable) {
         vector<int> result = list_of(3);
         Sandesh::set_response_callback(
             boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
-        show_req->set_routing_instance(table);
+        show_req->set_routing_table(table);
         validate_done_ = 0;
         show_req->HandleRequest();
         show_req->Release();
