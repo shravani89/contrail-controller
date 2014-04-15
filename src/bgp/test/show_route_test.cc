@@ -64,7 +64,7 @@ static const char config_tmpl[] = "\
 </config>\
 ";
 
-class ShowRouteTest : public ::testing::Test {
+class ShowRouteTestBase : public ::testing::Test {
 public:
     bool IsReady() const { return true; }
 
@@ -297,7 +297,10 @@ protected:
 
 int ShowRouteTest::validate_done_;
 
-TEST_F(ShowRouteTest, Basic) {
+class ShowRouteTest1 : ShowRouteTestBase {
+};
+
+TEST_F(ShowRouteTest1, Basic) {
     Configure();
     task_util::WaitForIdle();
 
@@ -426,18 +429,36 @@ TEST_F(ShowRouteTest, Basic) {
     DeleteInetVpnRoute("2:20:192.168.33.0/24", peers[2], 0);
 }
 
-TEST_F(ShowRouteTest, ExactRoutingInstance) {
-    Configure();
-    task_util::WaitForIdle();
+class ShowRouteTest2 : ShowRouteTestBase {
+    virtual void SetUp() {
+        ShowRouteTestBase::SetUp();
+        Configure();
+        task_util::WaitForIdle();
 
-    AddInetRoute("192.168.11.0/24", peers[0], "red");
-    AddInetRoute("192.168.12.0/24", peers[1], "red");
-    AddInetRoute("192.168.13.0/24", peers[2], "red");
+        AddInetRoute("192.168.11.0/24", peers[0], "red");
+        AddInetRoute("192.168.12.0/24", peers[1], "red");
+        AddInetRoute("192.168.13.0/24", peers[2], "red");
 
-    AddInetRoute("192.168.11.0/24", peers[0], "blue");
-    AddInetRoute("192.168.12.0/24", peers[1], "blue");
-    AddInetRoute("192.168.13.0/24", peers[2], "blue");
+        AddInetRoute("192.168.11.0/24", peers[0], "blue");
+        AddInetRoute("192.168.12.0/24", peers[1], "blue");
+        AddInetRoute("192.168.13.0/24", peers[2], "blue");
+    }
 
+    virtual void TearDown() {
+        DeleteInetRoute("192.168.11.0/24", peers[0], 2, "red");
+        DeleteInetRoute("192.168.12.0/24", peers[1], 1, "red");
+        DeleteInetRoute("192.168.13.0/24", peers[2], 0, "red");
+
+        DeleteInetRoute("192.168.11.0/24", peers[0], 2, "blue");
+        DeleteInetRoute("192.168.12.0/24", peers[1], 1, "blue");
+        DeleteInetRoute("192.168.13.0/24", peers[2], 0, "blue");
+
+        task_util::WaitForIdle();
+        ShowRouteTestBase::TearDown();
+    }
+};
+
+TEST_F(ShowRouteTest2, ExactRoutingInstance1) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
@@ -454,28 +475,28 @@ TEST_F(ShowRouteTest, ExactRoutingInstance) {
         show_req->Release();
         TASK_UTIL_EXPECT_EQ(1, validate_done_);
     }
-
-    DeleteInetRoute("192.168.11.0/24", peers[0], 2, "red");
-    DeleteInetRoute("192.168.12.0/24", peers[1], 1, "red");
-    DeleteInetRoute("192.168.13.0/24", peers[2], 0, "red");
-
-    DeleteInetRoute("192.168.11.0/24", peers[0], 2, "blue");
-    DeleteInetRoute("192.168.12.0/24", peers[1], 1, "blue");
-    DeleteInetRoute("192.168.13.0/24", peers[2], 0, "blue");
 }
 
-TEST_F(ShowRouteTest, ExactRoutingTable) {
-    Configure();
-    task_util::WaitForIdle();
+TEST_F(ShowRouteTest2, ExactRoutingInstance2) {
+    BgpSandeshContext sandesh_context;
+    sandesh_context.bgp_server = a_.get();
+    Sandesh::set_client_context(&sandesh_context);
 
-    AddInetRoute("192.168.11.0/24", peers[0], "red");
-    AddInetRoute("192.168.12.0/24", peers[1], "red");
-    AddInetRoute("192.168.13.0/24", peers[2], "red");
+    const char *instance_names[] = { "green", "blue1", "red1" };
+    BOOST_FOREACH(const char *instance, instance_names) {
+        ShowRouteReq *show_req = new ShowRouteReq;
+        vector<int> result;
+        Sandesh::set_response_callback(
+            boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
+        show_req->set_routing_instance(instance);
+        validate_done_ = 0;
+        show_req->HandleRequest();
+        show_req->Release();
+        TASK_UTIL_EXPECT_EQ(1, validate_done_);
+    }
+}
 
-    AddInetRoute("192.168.11.0/24", peers[0], "blue");
-    AddInetRoute("192.168.12.0/24", peers[1], "blue");
-    AddInetRoute("192.168.13.0/24", peers[2], "blue");
-
+TEST_F(ShowRouteTest2, ExactRoutingTable) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
@@ -492,28 +513,9 @@ TEST_F(ShowRouteTest, ExactRoutingTable) {
         show_req->Release();
         TASK_UTIL_EXPECT_EQ(1, validate_done_);
     }
-
-    DeleteInetRoute("192.168.11.0/24", peers[0], 2, "red");
-    DeleteInetRoute("192.168.12.0/24", peers[1], 1, "red");
-    DeleteInetRoute("192.168.13.0/24", peers[2], 0, "red");
-
-    DeleteInetRoute("192.168.11.0/24", peers[0], 2, "blue");
-    DeleteInetRoute("192.168.12.0/24", peers[1], 1, "blue");
-    DeleteInetRoute("192.168.13.0/24", peers[2], 0, "blue");
 }
 
-TEST_F(ShowRouteTest, ExactPrefix1) {
-    Configure();
-    task_util::WaitForIdle();
-
-    AddInetRoute("192.168.11.0/24", peers[0], "red");
-    AddInetRoute("192.168.12.0/24", peers[1], "red");
-    AddInetRoute("192.168.13.0/24", peers[2], "red");
-
-    AddInetRoute("192.168.11.0/24", peers[0], "blue");
-    AddInetRoute("192.168.12.0/24", peers[1], "blue");
-    AddInetRoute("192.168.13.0/24", peers[2], "blue");
-
+TEST_F(ShowRouteTest2, ExactPrefix1) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
@@ -532,28 +534,9 @@ TEST_F(ShowRouteTest, ExactPrefix1) {
         show_req->Release();
         TASK_UTIL_EXPECT_EQ(1, validate_done_);
     }
-
-    DeleteInetRoute("192.168.11.0/24", peers[0], 2, "red");
-    DeleteInetRoute("192.168.12.0/24", peers[1], 1, "red");
-    DeleteInetRoute("192.168.13.0/24", peers[2], 0, "red");
-
-    DeleteInetRoute("192.168.11.0/24", peers[0], 2, "blue");
-    DeleteInetRoute("192.168.12.0/24", peers[1], 1, "blue");
-    DeleteInetRoute("192.168.13.0/24", peers[2], 0, "blue");
 }
 
-TEST_F(ShowRouteTest, ExactPrefix2) {
-    Configure();
-    task_util::WaitForIdle();
-
-    AddInetRoute("192.168.11.0/24", peers[0], "red");
-    AddInetRoute("192.168.12.0/24", peers[1], "red");
-    AddInetRoute("192.168.13.0/24", peers[2], "red");
-
-    AddInetRoute("192.168.11.0/24", peers[0], "blue");
-    AddInetRoute("192.168.12.0/24", peers[1], "blue");
-    AddInetRoute("192.168.13.0/24", peers[2], "blue");
-
+TEST_F(ShowRouteTest2, ExactPrefix2) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
@@ -571,28 +554,9 @@ TEST_F(ShowRouteTest, ExactPrefix2) {
         show_req->Release();
         TASK_UTIL_EXPECT_EQ(1, validate_done_);
     }
-
-    DeleteInetRoute("192.168.11.0/24", peers[0], 2, "red");
-    DeleteInetRoute("192.168.12.0/24", peers[1], 1, "red");
-    DeleteInetRoute("192.168.13.0/24", peers[2], 0, "red");
-
-    DeleteInetRoute("192.168.11.0/24", peers[0], 2, "blue");
-    DeleteInetRoute("192.168.12.0/24", peers[1], 1, "blue");
-    DeleteInetRoute("192.168.13.0/24", peers[2], 0, "blue");
 }
 
-TEST_F(ShowRouteTest, ExactPrefix3) {
-    Configure();
-    task_util::WaitForIdle();
-
-    AddInetRoute("192.168.11.0/24", peers[0], "red");
-    AddInetRoute("192.168.12.0/24", peers[1], "red");
-    AddInetRoute("192.168.13.0/24", peers[2], "red");
-
-    AddInetRoute("192.168.11.0/24", peers[0], "blue");
-    AddInetRoute("192.168.12.0/24", peers[1], "blue");
-    AddInetRoute("192.168.13.0/24", peers[2], "blue");
-
+TEST_F(ShowRouteTest2, ExactPrefix3) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
@@ -610,14 +574,6 @@ TEST_F(ShowRouteTest, ExactPrefix3) {
         show_req->Release();
         TASK_UTIL_EXPECT_EQ(1, validate_done_);
     }
-
-    DeleteInetRoute("192.168.11.0/24", peers[0], 2, "red");
-    DeleteInetRoute("192.168.12.0/24", peers[1], 1, "red");
-    DeleteInetRoute("192.168.13.0/24", peers[2], 0, "red");
-
-    DeleteInetRoute("192.168.11.0/24", peers[0], 2, "blue");
-    DeleteInetRoute("192.168.12.0/24", peers[1], 1, "blue");
-    DeleteInetRoute("192.168.13.0/24", peers[2], 0, "blue");
 }
 
 class TestEnvironment : public ::testing::Environment {
