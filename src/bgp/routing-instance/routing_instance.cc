@@ -24,6 +24,7 @@
 
 using namespace std;
 using namespace boost::asio;
+using boost::assign::list_of;
 using boost::system::error_code;
 
 SandeshTraceBufferPtr RoutingInstanceTraceBuf(
@@ -922,8 +923,8 @@ BgpTable *RoutingInstance::GetTable(Address::Family fmly) {
 }
 
 string RoutingInstance::GetVrfFromTableName(const string table) {
-    static vector<string> master_tables = list_of("inet.0");
-    static vector<string> vpn_tables =
+    static set<string> master_tables = list_of("inet.0");
+    static set<string> vpn_tables =
         list_of("bgp.l3vpn.0")("bgp.evpn.0")("bgp.rtarget.0");
 
     if (master_tables.find(table) != master_tables.end())
