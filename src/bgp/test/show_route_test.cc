@@ -2,7 +2,8 @@
  * Copyright (c) 2013 Juniper Networks, Inc. All rights reserved.
  */
 
-#include "bgp/bgp_server.h"
+#include <boost/assign/list_of.hpp>
+#include <boost/foreach.hpp>
 
 #include "base/logging.h"
 #include "base/task.h"
@@ -16,18 +17,17 @@
 #include "bgp/bgp_peer.h"
 #include "bgp/bgp_peer_membership.h"
 #include "bgp/bgp_peer_types.h"
-#include "bgp/bgp_session_manager.h"
 #include "bgp/bgp_sandesh.h"
+#include "bgp/bgp_server.h"
+#include "bgp/bgp_session_manager.h"
 #include "bgp/inet/inet_table.h"
 #include "bgp/l3vpn/inetvpn_table.h"
 #include "bgp/test/bgp_server_test_util.h"
 #include "control-node/control_node.h"
 #include "io/test/event_manager_test.h"
-
 #include "testing/gunit.h"
-#include <boost/assign/list_of.hpp>
-using namespace boost::assign;
 
+using namespace boost::assign;
 using namespace boost::asio;
 using namespace std;
 
@@ -424,6 +424,82 @@ TEST_F(ShowRouteTest, Basic) {
     DeleteInetVpnRoute("2:20:192.240.11.0/12", peers[0], 2);
     DeleteInetVpnRoute("2:20:192.242.22.0/24", peers[1], 1);
     DeleteInetVpnRoute("2:20:192.168.33.0/24", peers[2], 0);
+}
+
+TEST_F(ShowRouteTest, ExactRoutingInstance) {
+    Configure();
+    task_util::WaitForIdle();
+
+    AddInetRoute("192.168.11.0/24", peers[0], "red");
+    AddInetRoute("192.168.12.0/24", peers[1], "red");
+    AddInetRoute("192.168.13.0/24", peers[2], "red");
+
+    AddInetRoute("192.168.11.0/24", peers[0], "blue");
+    AddInetRoute("192.168.12.0/24", peers[1], "blue");
+    AddInetRoute("192.168.23.0/24", peers[2], "blue");
+
+    BgpSandeshContext sandesh_context;
+    sandesh_context.bgp_server = a_.get();
+    Sandesh::set_client_context(&sandesh_context);
+
+    char *instance_names[] = { "blue", "red" };
+    BOOST_FOREACH(string instance, instance_names) {
+        ShowRouteReq *show_req = new ShowRouteReq;
+        result = list_of(3);
+        Sandesh::set_response_callback(
+            boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
+        show_req->set_routing_instance(instance);
+        validate_done_ = 0;
+        show_req->HandleRequest();
+        show_req->Release();
+        TASK_UTIL_EXPECT_EQ(1, validate_done_);
+    }
+
+    DeleteInetRoute("192.240.11.0/12", peers[0], 2, "red");
+    DeleteInetRoute("192.168.12.0/24", peers[1], 1, "red");
+    DeleteInetRoute("192.168.13.0/24", peers[2], 0, "red");
+
+    DeleteInetRoute("192.240.11.0/12", peers[0], 2, "blue");
+    DeleteInetRoute("192.168.12.0/24", peers[1], 1, "blue");
+    DeleteInetRoute("192.168.23.0/24", peers[2], 0, "blue");
+}
+
+TEST_F(ShowRouteTest, ExactRoutingTable) {
+    Configure();
+    task_util::WaitForIdle();
+
+    AddInetRoute("192.168.11.0/24", peers[0], "red");
+    AddInetRoute("192.168.12.0/24", peers[1], "red");
+    AddInetRoute("192.168.13.0/24", peers[2], "red");
+
+    AddInetRoute("192.168.11.0/24", peers[0], "blue");
+    AddInetRoute("192.168.12.0/24", peers[1], "blue");
+    AddInetRoute("192.168.23.0/24", peers[2], "blue");
+
+    BgpSandeshContext sandesh_context;
+    sandesh_context.bgp_server = a_.get();
+    Sandesh::set_client_context(&sandesh_context);
+
+    char *table_names[] = { "blue.inet.0", "red.inet.0" };
+    BOOST_FOREACH(string table, table_names) {
+        ShowRouteReq *show_req = new ShowRouteReq;
+        result = list_of(3);
+        Sandesh::set_response_callback(
+            boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
+        show_req->set_routing_instance(table);
+        validate_done_ = 0;
+        show_req->HandleRequest();
+        show_req->Release();
+        TASK_UTIL_EXPECT_EQ(1, validate_done_);
+    }
+
+    DeleteInetRoute("192.240.11.0/12", peers[0], 2, "red");
+    DeleteInetRoute("192.168.12.0/24", peers[1], 1, "red");
+    DeleteInetRoute("192.168.13.0/24", peers[2], 0, "red");
+
+    DeleteInetRoute("192.240.11.0/12", peers[0], 2, "blue");
+    DeleteInetRoute("192.168.12.0/24", peers[1], 1, "blue");
+    DeleteInetRoute("192.168.23.0/24", peers[2], 0, "blue");
 }
 
 class TestEnvironment : public ::testing::Environment {
