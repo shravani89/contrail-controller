@@ -583,15 +583,115 @@ TEST_F(ShowRouteTest2, MatchingPrefix1) {
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
 
-    const char *prefix_formats[] = { "192.168.0.0/16", "192.168/16", "192.168.0.0/16" };
+    const char *prefix_formats[] = { "192.168.0.0/16", "192.168/16" };
     BOOST_FOREACH(const char *prefix, prefix_formats) {
         ShowRouteReq *show_req = new ShowRouteReq;
         vector<int> result = list_of(3)(3);
         Sandesh::set_response_callback(
             boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
-        cout << "Checking prefix " << string(prefix) << endl;
         show_req->set_prefix(prefix);
         show_req->set_longer_match(true);
+        validate_done_ = 0;
+        show_req->HandleRequest();
+        show_req->Release();
+        TASK_UTIL_EXPECT_EQ(1, validate_done_);
+    }
+}
+
+TEST_F(ShowRouteTest2, MatchingPrefix2) {
+    BgpSandeshContext sandesh_context;
+    sandesh_context.bgp_server = a_.get();
+    Sandesh::set_client_context(&sandesh_context);
+
+    ShowRouteReq *show_req = new ShowRouteReq;
+    vector<int> result;
+    Sandesh::set_response_callback(
+        boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
+    show_req->set_prefix("192.169.0.0/16");
+    show_req->set_longer_match(true);
+    validate_done_ = 0;
+    show_req->HandleRequest();
+    show_req->Release();
+    TASK_UTIL_EXPECT_EQ(1, validate_done_);
+}
+
+TEST_F(ShowRouteTest2, MatchingPrefix3) {
+    BgpSandeshContext sandesh_context;
+    sandesh_context.bgp_server = a_.get();
+    Sandesh::set_client_context(&sandesh_context);
+
+    const char *instance_names[] = { "blue", "red" };
+    BOOST_FOREACH(const char *instance, instance_names) {
+        ShowRouteReq *show_req = new ShowRouteReq;
+        vector<int> result = list_of(3);
+        Sandesh::set_response_callback(
+            boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
+        show_req->set_prefix("192.168.0.0/16");
+        show_req->set_longer_match(true);
+        show_req->set_routing_instance(instance);
+        validate_done_ = 0;
+        show_req->HandleRequest();
+        show_req->Release();
+        TASK_UTIL_EXPECT_EQ(1, validate_done_);
+    }
+}
+
+TEST_F(ShowRouteTest2, MatchingPrefix4) {
+    BgpSandeshContext sandesh_context;
+    sandesh_context.bgp_server = a_.get();
+    Sandesh::set_client_context(&sandesh_context);
+
+    const char *instance_names[] = { "green", "blue1", "red1" };
+    BOOST_FOREACH(const char *instance, instance_names) {
+        ShowRouteReq *show_req = new ShowRouteReq;
+        vector<int> result;
+        Sandesh::set_response_callback(
+            boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
+        show_req->set_prefix("192.168.0.0/16");
+        show_req->set_longer_match(true);
+        show_req->set_routing_instance(instance);
+        validate_done_ = 0;
+        show_req->HandleRequest();
+        show_req->Release();
+        TASK_UTIL_EXPECT_EQ(1, validate_done_);
+    }
+}
+
+TEST_F(ShowRouteTest2, MatchingPrefix5) {
+    BgpSandeshContext sandesh_context;
+    sandesh_context.bgp_server = a_.get();
+    Sandesh::set_client_context(&sandesh_context);
+
+    const char *table_names[] = { "blue.inet.0", "red.inet.0" };
+    BOOST_FOREACH(const char *table, table_names) {
+        ShowRouteReq *show_req = new ShowRouteReq;
+        vector<int> result = list_of(3);
+        Sandesh::set_response_callback(
+            boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
+        show_req->set_prefix("192.168.0.0/16");
+        show_req->set_longer_match(true);
+        show_req->set_routing_table(table);
+        validate_done_ = 0;
+        show_req->HandleRequest();
+        show_req->Release();
+        TASK_UTIL_EXPECT_EQ(1, validate_done_);
+    }
+}
+
+TEST_F(ShowRouteTest2, MatchingPrefix6) {
+    BgpSandeshContext sandesh_context;
+    sandesh_context.bgp_server = a_.get();
+    Sandesh::set_client_context(&sandesh_context);
+
+    const char *table_names[] = { "green.inet.0", "blue.inet.1", "red.inet.1" };
+    BOOST_FOREACH(const char *table, table_names) {
+        ShowRouteReq *show_req = new ShowRouteReq;
+        vector<int> result;
+        Sandesh::set_response_callback(
+            boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
+        show_req->set_prefix("192.168.0.0/16");
+        show_req->set_longer_match(true);
+        show_req->set_routing_table(table);
         validate_done_ = 0;
         show_req->HandleRequest();
         show_req->Release();
