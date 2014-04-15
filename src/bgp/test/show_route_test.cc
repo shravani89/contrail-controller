@@ -460,16 +460,6 @@ protected:
     }
 };
 
-TEST_F(ShowRouteTest2, xxx) {
-    string vrf;
-    vrf = RoutingInstance::GetVrfFromTableName("inet.0");
-    cout << vrf << endl;
-    vrf = RoutingInstance::GetVrfFromTableName("bgp.l3vpn.0");
-    cout << vrf << endl;
-    vrf = RoutingInstance::GetVrfFromTableName("blue.inet.0");
-    cout << vrf << endl;
-}
-
 TEST_F(ShowRouteTest2, ExactRoutingInstance1) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();

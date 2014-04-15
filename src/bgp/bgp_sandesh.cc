@@ -134,7 +134,6 @@ bool ShowRouteHandler::CallbackS1(const Sandesh *sr,
     } else {
         exact_routing_instance =
             RoutingInstance::GetVrfFromTableName(exact_routing_table);
-        cout << "Exact RI = " << exact_routing_instance << endl;
     }
     if (exact_routing_instance.empty()) {
         start_routing_instance = req->get_start_routing_instance();
