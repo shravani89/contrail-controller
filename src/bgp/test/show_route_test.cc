@@ -442,10 +442,10 @@ TEST_F(ShowRouteTest, ExactRoutingInstance) {
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
 
-    char *instance_names[] = { "blue", "red" };
+    const char *instance_names[] = { "blue", "red" };
     BOOST_FOREACH(const char *instance, instance_names) {
         ShowRouteReq *show_req = new ShowRouteReq;
-        result = list_of(3);
+        vector<int> result = list_of(3);
         Sandesh::set_response_callback(
             boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
         show_req->set_routing_instance(instance);
@@ -480,10 +480,10 @@ TEST_F(ShowRouteTest, ExactRoutingTable) {
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
 
-    char *table_names[] = { "blue.inet.0", "red.inet.0" };
+    const char *table_names[] = { "blue.inet.0", "red.inet.0" };
     BOOST_FOREACH(const char *table, table_names) {
         ShowRouteReq *show_req = new ShowRouteReq;
-        result = list_of(3);
+        vector<int> result = list_of(3);
         Sandesh::set_response_callback(
             boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
         show_req->set_routing_instance(table);
