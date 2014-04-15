@@ -753,6 +753,7 @@ TEST_F(ShowRouteTest2, StartPrefix1) {
         show_req->set_start_routing_instance(instance);
         show_req->set_start_routing_table(string(instance) + "inet.0");
         show_req->set_start_prefix("192.168.12.0/24");
+        show_req->set_count(100);
         validate_done_ = 0;
         show_req->HandleRequest();
         show_req->Release();
