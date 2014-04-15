@@ -739,6 +739,44 @@ TEST_F(ShowRouteTest2, MatchingPrefix4) {
     }
 }
 
+TEST_F(ShowRouteTest2, StartPrefix1a) {
+    BgpSandeshContext sandesh_context;
+    sandesh_context.bgp_server = a_.get();
+    Sandesh::set_client_context(&sandesh_context);
+
+    ShowRouteReq *show_req = new ShowRouteReq;
+    vector<int> result = list_of(2)(3);
+    Sandesh::set_response_callback(
+        boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
+    show_req->set_start_routing_instance("blue");
+    show_req->set_start_routing_table("blue.inet.0");
+    show_req->set_start_prefix("192.168.12.0/24");
+    show_req->set_routing_instance(instance);
+    validate_done_ = 0;
+    show_req->HandleRequest();
+    show_req->Release();
+    TASK_UTIL_EXPECT_EQ(1, validate_done_);
+}
+
+TEST_F(ShowRouteTest2, StartPrefix1b) {
+    BgpSandeshContext sandesh_context;
+    sandesh_context.bgp_server = a_.get();
+    Sandesh::set_client_context(&sandesh_context);
+
+    ShowRouteReq *show_req = new ShowRouteReq;
+    vector<int> result = list_of(2);
+    Sandesh::set_response_callback(
+        boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
+    show_req->set_start_routing_instance("red");
+    show_req->set_start_routing_table("red.inet.0");
+    show_req->set_start_prefix("192.168.12.0/24");
+    show_req->set_routing_instance(instance);
+    validate_done_ = 0;
+    show_req->HandleRequest();
+    show_req->Release();
+    TASK_UTIL_EXPECT_EQ(1, validate_done_);
+}
+
 TEST_F(ShowRouteTest2, StartPrefix2) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
