@@ -431,6 +431,7 @@ TEST_F(ShowRouteTest1, Basic) {
 }
 
 class ShowRouteTest2 : ShowRouteTestBase {
+protected:
     virtual void SetUp() {
         ShowRouteTestBase::SetUp();
         Configure();
