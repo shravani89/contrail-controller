@@ -385,9 +385,8 @@ TEST_F(ShowRouteTest1, Basic) {
     validate_done_ = 0;
     show_req->HandleRequest();
     show_req->Release();
-    task_util::WaitForIdle();
-
     TASK_UTIL_EXPECT_EQ(1, validate_done_);
+
     show_req = new ShowRouteReq;
     result = list_of(3)(3);
     Sandesh::set_response_callback(boost::bind(ValidateSandeshResponse, _1,
@@ -397,9 +396,8 @@ TEST_F(ShowRouteTest1, Basic) {
     validate_done_ = 0;
     show_req->HandleRequest();
     show_req->Release();
-    task_util::WaitForIdle();
-
     TASK_UTIL_EXPECT_EQ(1, validate_done_);
+
     show_req = new ShowRouteReq;
     result = list_of(3);
     Sandesh::set_response_callback(boost::bind(ValidateSandeshResponse, _1,
@@ -409,10 +407,9 @@ TEST_F(ShowRouteTest1, Basic) {
     show_req->HandleRequest();
     show_req->Release();
     task_util::WaitForIdle();
+    TASK_UTIL_EXPECT_EQ(1, validate_done_);
 
-    //
     // Delete all the routes added
-    //
     DeleteInetRoute("192.168.240.0/20", peers[0], 2);
     DeleteInetRoute("192.168.242.0/24", peers[1], 1);
     DeleteInetRoute("192.168.3.0/24", peers[2], 0);
@@ -491,6 +488,49 @@ TEST_F(ShowRouteTest2, ExactRoutingInstance2) {
         Sandesh::set_response_callback(
             boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
         show_req->set_routing_instance(instance);
+        validate_done_ = 0;
+        show_req->HandleRequest();
+        show_req->Release();
+        TASK_UTIL_EXPECT_EQ(1, validate_done_);
+    }
+}
+
+TEST_F(ShowRouteTest2, StartRoutingInstance1) {
+    BgpSandeshContext sandesh_context;
+    sandesh_context.bgp_server = a_.get();
+    Sandesh::set_client_context(&sandesh_context);
+
+    const char *instance_names[] = { "blue", "red" };
+    BOOST_FOREACH(const char *instance, instance_names) {
+        ShowRouteReq *show_req = new ShowRouteReq;
+        vector<int> result = list_of(2);
+        Sandesh::set_response_callback(
+            boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
+        show_req->set_start_routing_instance(instance);
+        show_req->set_routing_instance(instance);
+        show_req->set_start_prefix("192.168.12.0/24");
+        validate_done_ = 0;
+        show_req->HandleRequest();
+        show_req->Release();
+        TASK_UTIL_EXPECT_EQ(1, validate_done_);
+    }
+}
+
+TEST_F(ShowRouteTest2, StartRoutingInstance2) {
+    BgpSandeshContext sandesh_context;
+    sandesh_context.bgp_server = a_.get();
+    Sandesh::set_client_context(&sandesh_context);
+
+    const char *instance_names[] = { "blue", "red" };
+    BOOST_FOREACH(const char *instance, instance_names) {
+        ShowRouteReq *show_req = new ShowRouteReq;
+        vector<int> result = list_of(1);
+        Sandesh::set_response_callback(
+            boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
+        show_req->set_start_routing_instance(instance);
+        show_req->set_routing_instance(instance);
+        show_req->set_start_prefix("192.168.12.0/24");
+        show_req->set_count(1);
         validate_done_ = 0;
         show_req->HandleRequest();
         show_req->Release();
