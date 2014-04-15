@@ -739,7 +739,7 @@ TEST_F(ShowRouteTest2, MatchingPrefix4) {
     }
 }
 
-TEST_F(ShowRouteTest2, StartPrefix1) {
+TEST_F(ShowRouteTest2, StartPrefix2) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
@@ -753,6 +753,7 @@ TEST_F(ShowRouteTest2, StartPrefix1) {
         show_req->set_start_routing_instance(instance);
         show_req->set_start_routing_table(string(instance) + ".inet.0");
         show_req->set_start_prefix("192.168.12.0/24");
+        show_req->set_routing_instance(instance);
         validate_done_ = 0;
         show_req->HandleRequest();
         show_req->Release();
@@ -760,7 +761,7 @@ TEST_F(ShowRouteTest2, StartPrefix1) {
     }
 }
 
-TEST_F(ShowRouteTest2, StartPrefix2) {
+TEST_F(ShowRouteTest2, StartPrefix3) {
     BgpSandeshContext sandesh_context;
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
