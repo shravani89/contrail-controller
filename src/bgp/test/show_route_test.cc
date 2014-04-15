@@ -523,7 +523,7 @@ TEST_F(ShowRouteTest, ExactPrefix1) {
     };
     BOOST_FOREACH(const char *prefix, prefix_list) {
         ShowRouteReq *show_req = new ShowRouteReq;
-        vector<int> result = list_of(2);
+        vector<int> result = list_of(1)(1);
         Sandesh::set_response_callback(
             boost::bind(ValidateSandeshResponse, _1, result, __LINE__));
         show_req->set_prefix(prefix);
