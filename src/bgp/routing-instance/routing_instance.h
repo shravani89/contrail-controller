@@ -61,7 +61,7 @@ public:
     void ClearConfig();
 
     static std::string GetTableNameFromVrf(std::string name, Address::Family fmly);
-    static std::string GetVrfFromTableName(const string table);
+    static std::string GetVrfFromTableName(const std::string table);
 
     BgpTable *GetTable(Address::Family fmly);
 
