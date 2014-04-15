@@ -751,7 +751,6 @@ TEST_F(ShowRouteTest2, StartPrefix1a) {
     show_req->set_start_routing_instance("blue");
     show_req->set_start_routing_table("blue.inet.0");
     show_req->set_start_prefix("192.168.12.0/24");
-    show_req->set_routing_instance(instance);
     validate_done_ = 0;
     show_req->HandleRequest();
     show_req->Release();
@@ -770,7 +769,6 @@ TEST_F(ShowRouteTest2, StartPrefix1b) {
     show_req->set_start_routing_instance("red");
     show_req->set_start_routing_table("red.inet.0");
     show_req->set_start_prefix("192.168.12.0/24");
-    show_req->set_routing_instance(instance);
     validate_done_ = 0;
     show_req->HandleRequest();
     show_req->Release();
