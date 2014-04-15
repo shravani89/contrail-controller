@@ -102,7 +102,6 @@ protected:
         a_->Configure(config);
         task_util::WaitForIdle();
 
-        BgpPeerTest *peers[3];
         RibExportPolicy policy(BgpProto::IBGP, RibExportPolicy::BGP, 1, 0);
         DB *db_a = a_.get()->database();
 
@@ -291,6 +290,7 @@ protected:
     auto_ptr<ServerThread> thread_;
     auto_ptr<BgpServerTest> a_;
     auto_ptr<BgpServerTest> b_;
+    BgpPeerTest *peers[3];
 
     static int validate_done_;
 };
