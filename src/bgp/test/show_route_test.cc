@@ -583,7 +583,7 @@ TEST_F(ShowRouteTest2, MatchingPrefix1) {
     sandesh_context.bgp_server = a_.get();
     Sandesh::set_client_context(&sandesh_context);
 
-    const char *prefix_formats[] = { "192.168.0.0/16", "192.168/16" };
+    const char *prefix_formats[] = { "192.168/16", "192.168.0.0/16" };
     BOOST_FOREACH(const char *prefix, prefix_formats) {
         ShowRouteReq *show_req = new ShowRouteReq;
         vector<int> result = list_of(3)(3);
