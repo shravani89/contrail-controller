@@ -111,7 +111,8 @@ protected:
                 BgpConfigManager::kMasterInstance, uuid) != NULL);
             peers[j] = a_->FindPeerByUuid(
                 BgpConfigManager::kMasterInstance, uuid);
-            peers[j]->IsReady_fnc_ = boost::bind(&ShowRouteTest::IsReady, this);
+            peers[j]->IsReady_fnc_ =
+                boost::bind(&ShowRouteTestBase::IsReady, this);
         }
 
         InetTable *table_a =
@@ -295,7 +296,7 @@ protected:
     static int validate_done_;
 };
 
-int ShowRouteTest::validate_done_;
+int ShowRouteTestBase::validate_done_;
 
 class ShowRouteTest1 : ShowRouteTestBase {
 };
