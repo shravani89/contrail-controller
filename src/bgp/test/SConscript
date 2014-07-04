@@ -360,6 +360,7 @@ flaky_test_suite = [
     bgp_xmpp_basic_test,
     bgp_xmpp_deferq_test,
     bgp_xmpp_evpn_test,
+    bgp_xmpp_inetvpn_test,
     rtarget_peer_test,
     xmpp_ecmp_test,
     bgp_server_test,
