@@ -102,11 +102,12 @@ contrail_vrouter_agent = env.Program(target = 'contrail-vrouter-agent',
                                'main.cc'])
 env.Alias('agent:contrail-vrouter-agent', contrail_vrouter_agent)
 env.Default(contrail_vrouter_agent)
-env.Alias('agent:vnswad', vnswad)
-env.Alias('compute-node-install', vnswad)
-env.Default(vnswad)
+env.Alias('compute-node-install', contrail_vrouter_agent)
 
 env.Alias('install', env.Install(env['INSTALL_BIN'], contrail_vrouter_agent))
 env.Alias('install', env.Install(env['INSTALL_CONF'], 
           '../contrail-vrouter-agent.conf'))
-env.Alias('compute-node-install', env.Install(env['INSTALL_BIN'], vnswad))
+env.Alias('compute-node-install', env.Install(env['INSTALL_BIN'], contrail_vrouter_agent))
+env.Alias('compute-node-install', env.Install(env['INSTALL_CONF'],
+          '../contrail-vrouter-agent.conf'))
+
